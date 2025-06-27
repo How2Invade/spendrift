@@ -5,6 +5,7 @@ import SummaryCard from '@/components/dashboard/summary-card';
 import RecentTransactions from '@/components/dashboard/recent-transactions';
 import SpendingAdvice from '@/components/dashboard/spending-advice';
 import ParentAlert from '@/components/dashboard/parent-alert';
+import FinancialForecast from '@/components/dashboard/financial-forecast';
 
 export default function DashboardPage() {
   const summaryData = [
@@ -53,6 +54,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex flex-col gap-8">
           <SpendingAdvice />
+          <FinancialForecast />
           <ParentAlert />
         </div>
       </div>
