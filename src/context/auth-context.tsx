@@ -29,13 +29,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
-    // Set a timeout to prevent infinite loading
+    // Set a shorter timeout to prevent infinite loading
     timeoutId = setTimeout(() => {
       if (loading) {
         console.warn('Auth loading timeout - forcing loading state to false');
         setLoading(false);
       }
-    }, 10000); // 10 second timeout
+    }, 3000); // Reduced to 3 seconds
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {

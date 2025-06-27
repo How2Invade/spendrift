@@ -11,13 +11,13 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    // Animation duration: 5 seconds total (slower)
+    // Much shorter animation duration: 1.5 seconds total
     const timer = setTimeout(() => {
       setIsComplete(true);
       setTimeout(() => {
         onComplete?.();
-      }, 800); // Small delay before calling onComplete
-    }, 5000);
+      }, 300); // Shorter delay before calling onComplete
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
