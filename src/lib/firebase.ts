@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBLXu60Ep22ElAX5VFpFwoLkApfJGPCtQk",
   authDomain: "spendrift.firebaseapp.com",
   projectId: "spendrift",
-  storageBucket: "spendrift.appspot.com",
+  storageBucket: "spendrift.firebasestorage.app",
   messagingSenderId: "218606426646",
   appId: "1:218606426646:web:944bd2223e9ecd25b03337"
 };
