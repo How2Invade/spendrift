@@ -1,63 +1,67 @@
 'use client';
 
-import { DollarSign, CreditCard, PiggyBank, Smile, Frown } from 'lucide-react';
-import SummaryCard from '@/components/dashboard/summary-card';
-import RecentTransactions from '@/components/dashboard/recent-transactions';
-import SpendingAdvice from '@/components/dashboard/spending-advice';
-import ParentAlert from '@/components/dashboard/parent-alert';
-import FinancialForecast from '@/components/dashboard/financial-forecast';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
-export default function DashboardPage() {
-  const summaryData = [
-    {
-      title: 'Earned',
-      value: '₹50,000.00',
-      icon: DollarSign,
-      change: '+10.2% this month',
-    },
-    {
-      title: 'Spent',
-      value: '₹22,500.50',
-      icon: CreditCard,
-      change: '-5.1% this month',
-    },
-    {
-      title: 'Saved',
-      value: '₹27,499.50',
-      icon: PiggyBank,
-      change: '+20.5% this month',
-    },
-    {
-      title: 'Mood',
-      value: 'Vibing',
-      icon: Smile,
-      change: 'Based on spending',
-    },
-  ];
+export default function LandingPage() {
+  const [text, setText] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
+  const fullText = 'SpenDrift';
+
+  useEffect(() => {
+    let index = 0;
+    setText(''); // Reset text on mount
+    const typingInterval = setInterval(() => {
+      if (index < fullText.length) {
+        setText((prev) => prev + fullText.charAt(index));
+        index++;
+      } else {
+        clearInterval(typingInterval);
+        // Make cursor blink after typing
+        const cursorInterval = setInterval(() => {
+          setShowCursor((prev) => !prev);
+        }, 500);
+        return () => clearInterval(cursorInterval);
+      }
+    }, 150);
+
+    return () => clearInterval(typingInterval);
+  }, []);
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-8">
-      <header>
-        <h1 className="text-3xl font-bold font-headline">Dashboard ✨</h1>
-        <p className="text-muted-foreground">Welcome back! Here's your financial tea.</p>
-      </header>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {summaryData.map((data) => (
-          <SummaryCard key={data.title} {...data} />
-        ))}
+    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-foreground">
+      <div className="absolute inset-0 z-0 opacity-5">
+        <Image
+          src="https://placehold.co/1920x1080.png"
+          alt="Abstract money pattern background"
+          data-ai-hint="money pattern"
+          layout="fill"
+          objectFit="cover"
+          priority
+        />
       </div>
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-background/50 via-background/80 to-background" />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentTransactions />
+      <main className="z-20 flex flex-col items-center justify-center text-center p-4">
+        <h1 className="text-7xl md:text-8xl font-bold font-headline text-primary tracking-tighter animate-fade-in-up">
+          {text}
+          <span className={showCursor ? 'opacity-100 transition-opacity duration-150' : 'opacity-0 transition-opacity duration-150'}>_</span>
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl animate-fade-in-up animation-delay-300">
+          Your Gen-Z finance buddy. Master your money with AI-powered insights, gamified goals, and zero stress.
+        </p>
+        <div className="animate-fade-in-up animation-delay-600">
+          <Button asChild size="lg" className="mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+            <Link href="/dashboard">
+              Explore The App
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
         </div>
-        <div className="flex flex-col gap-8">
-          <SpendingAdvice />
-          <FinancialForecast />
-          <ParentAlert />
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

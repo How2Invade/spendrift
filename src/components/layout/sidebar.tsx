@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/theme-toggle';
 
 const links = [
-  { href: '/', label: 'Dashboard', icon: LayoutGrid, emoji: '✨' },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid, emoji: '✨' },
   { href: '/analytics', label: 'Analytics', icon: BarChart2, emoji: '📈' },
   { href: '/goals', label: 'Goals', icon: Trophy, emoji: '🏆' },
   { href: '/rewards', label: 'Rewards', icon: Gem, emoji: '💎' },
