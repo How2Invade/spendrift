@@ -11,19 +11,19 @@ export default function DashboardPage() {
   const summaryData = [
     {
       title: 'Earned',
-      value: '$2,450.00',
+      value: '₹50,000.00',
       icon: DollarSign,
       change: '+10.2% this month',
     },
     {
       title: 'Spent',
-      value: '$1,234.56',
+      value: '₹22,500.50',
       icon: CreditCard,
       change: '-5.1% this month',
     },
     {
       title: 'Saved',
-      value: '$1,215.44',
+      value: '₹27,499.50',
       icon: PiggyBank,
       change: '+20.5% this month',
     },

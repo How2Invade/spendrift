@@ -21,7 +21,7 @@ export default function SpendingAdvice() {
     try {
       // In a real app, this data would be dynamic
       const spendingData = mockTransactions.map(t => `${t.category},${t.amount},${t.date},${t.emotionalState}`).join('\n');
-      const personalData = "Age: 22, Income: $3000/month, Goal: Save for a trip to Japan.";
+      const personalData = "Age: 22, Income: ₹75000/month, Goal: Save for a trip to Goa.";
 
       const output = await analyzeSpendingPatterns({ spendingData, personalData });
       setResult(output);

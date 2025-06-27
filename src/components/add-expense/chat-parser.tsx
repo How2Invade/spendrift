@@ -51,7 +51,7 @@ export default function ChatParser() {
     <Card className="glassmorphism">
       <CardHeader>
         <CardTitle>Chat Expense Entry 💬</CardTitle>
-        <CardDescription>Just tell me what you spent. I'll figure out the rest. e.g., "boba tea for 7 dollars on tuesday"</CardDescription>
+        <CardDescription>Just tell me what you spent. I'll figure out the rest. e.g., "boba tea for 350 rupees on tuesday"</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
@@ -63,7 +63,7 @@ export default function ChatParser() {
                 <FormItem>
                   <FormLabel>Your expense</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. copped new kicks for $150 yesterday" {...field} />
+                    <Input placeholder="e.g. copped new kicks for ₹4500 yesterday" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -79,7 +79,7 @@ export default function ChatParser() {
           <div className="mt-6 p-4 bg-primary/10 rounded-lg space-y-2">
             <h3 className="font-bold">Parsed Expense:</h3>
             <p><strong>Category:</strong> {result.category}</p>
-            <p><strong>Amount:</strong> ${result.amount.toFixed(2)}</p>
+            <p><strong>Amount:</strong> ₹{result.amount.toFixed(2)}</p>
             <p><strong>Date:</strong> {result.date}</p>
             <p><strong>Description:</strong> {result.description}</p>
           </div>

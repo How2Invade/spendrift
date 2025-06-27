@@ -33,7 +33,7 @@ export default function RecentTransactions() {
                   'text-right font-medium font-mono',
                   transaction.type === 'expense' ? 'text-red-400' : 'text-green-400'
                 )}>
-                  {transaction.type === 'expense' ? '-' : '+'}${transaction.amount.toFixed(2)}
+                  {transaction.type === 'expense' ? '-' : '+'}₹{transaction.amount.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}

@@ -16,13 +16,13 @@ import {
 } from '@/components/ui/chart';
 
 const chartData = [
-  { day: 'Mon', spending: 50 },
-  { day: 'Tue', spending: 75 },
-  { day: 'Wed', spending: 22 },
-  { day: 'Thu', spending: 68 },
-  { day: 'Fri', spending: 120 },
-  { day: 'Sat', spending: 90 },
-  { day: 'Sun', spending: 45 },
+  { day: 'Mon', spending: 500 },
+  { day: 'Tue', spending: 750 },
+  { day: 'Wed', spending: 220 },
+  { day: 'Thu', spending: 680 },
+  { day: 'Fri', spending: 1200 },
+  { day: 'Sat', spending: 900 },
+  { day: 'Sun', spending: 450 },
 ];
 
 const chartConfig = {
@@ -54,7 +54,7 @@ export default function SpendingChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={10}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `₹${value}`}
             />
             <ChartTooltip
               cursor={false}

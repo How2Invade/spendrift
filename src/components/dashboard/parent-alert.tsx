@@ -11,7 +11,7 @@ export default function ParentAlert() {
   const handleAlert = () => {
     toast({
       title: '🚨 Parent Alert Sent!',
-      description: "A mock SMS was 'sent' to your parent. You've spent $250 on boba this week.",
+      description: "A mock SMS was 'sent' to your parent. You've spent ₹1500 on boba this week.",
       action: (
         <div className="p-2 bg-primary/20 rounded-full">
           <Phone className="h-5 w-5 text-primary" />

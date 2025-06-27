@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   name: 'parseExpenseChatPrompt',
   input: {schema: ParseExpenseChatInputSchema},
   output: {schema: ParseExpenseChatOutputSchema},
-  prompt: `You are an AI assistant that parses expense data from natural language chat input.
+  prompt: `You are an AI assistant that parses expense data from natural language chat input. The user is in India, so the currency is Indian Rupees (INR, ₹). If no currency is mentioned, assume it is INR.
 
   Given the following chat input, extract the category, amount, date, and description of the expense.
   Ensure the date is formatted as YYYY-MM-DD.
