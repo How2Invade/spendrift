@@ -1,18 +1,17 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import type { Transaction, Goal } from '@/lib/types';
+import type { Transaction as LibTransaction, Goal as LibGoal } from '@/lib/types';
+import { Transaction as SupaTransaction, Goal as SupaGoal, supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './auth-context';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, addDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 
 interface DataContextProps {
-  transactions: Transaction[];
-  goals: Goal[];
+  transactions: LibTransaction[];
+  goals: LibGoal[];
   points: number;
-  addTransaction: (transaction: Omit<Transaction, 'id' | 'emotionalState'>) => Promise<void>;
-  addGoal: (goal: Omit<Goal, 'id' | 'progress' | 'isCompleted'>) => Promise<void>;
+  addTransaction: (transaction: Omit<LibTransaction, 'id' | 'emotionalState'>) => Promise<void>;
+  addGoal: (goal: Omit<LibGoal, 'id' | 'progress' | 'isCompleted'>) => Promise<void>;
   completeGoal: (goalId: string) => Promise<void>;
 }
 
@@ -20,11 +19,49 @@ const DataContext = createContext<DataContextProps | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [transactions, setTransactions] = useState<LibTransaction[]>([]);
+  const [goals, setGoals] = useState<LibGoal[]>([]);
   const [points, setPoints] = useState(0);
+
+  // Convert Supabase transaction to lib transaction
+  const convertSupaToLibTransaction = (supaTransaction: SupaTransaction): LibTransaction => ({
+    id: supaTransaction.id,
+    amount: Math.abs(supaTransaction.amount),
+    description: supaTransaction.description,
+    category: supaTransaction.category,
+    date: supaTransaction.date,
+    type: supaTransaction.amount >= 0 ? 'income' : 'expense',
+    emotionalState: supaTransaction.emotional_state as 'impulse' | 'need' | 'want' || undefined,
+  });
+
+  // Convert Supabase goal to lib goal
+  const convertSupaToLibGoal = (supaGoal: SupaGoal): LibGoal => ({
+    id: supaGoal.id,
+    title: supaGoal.title,
+    description: supaGoal.description || '',
+    emoji: getEmojiForCategory(supaGoal.category),
+    progress: supaGoal.progress,
+    points: supaGoal.points,
+    isCompleted: supaGoal.is_completed,
+  });
+
+  // Helper function to get emoji for category
+  const getEmojiForCategory = (category: string): string => {
+    const emojiMap: { [key: string]: string } = {
+      'food': '🍕',
+      'transport': '🚗',
+      'entertainment': '🎬',
+      'shopping': '🛍️',
+      'health': '🏥',
+      'education': '📚',
+      'savings': '💰',
+      'travel': '✈️',
+      'other': '📦'
+    };
+    return emojiMap[category.toLowerCase()] || '📦';
+  };
 
   useEffect(() => {
     if (!user) {
@@ -34,95 +71,220 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Listener for user data (points)
-    const userDocRef = doc(db, 'users', user.uid);
-    const unsubscribeUser = onSnapshot(userDocRef, (doc) => {
-        if (doc.exists()) {
-            setPoints(doc.data().points || 0);
+    // Set points from user profile
+    if (userProfile) {
+      setPoints(userProfile.points);
+    }
+
+    // Load transactions
+    loadTransactions();
+
+    // Load goals
+    loadGoals();
+
+    // Subscribe to real-time changes
+    const transactionsChannel = supabase
+      .channel('transactions_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadTransactions();
         }
-    });
+      )
+      .subscribe();
 
-    // Listener for transactions
-    const transactionsColRef = collection(db, 'users', user.uid, 'transactions');
-    const transactionsQuery = query(transactionsColRef, orderBy('date', 'desc'));
-    const unsubscribeTransactions = onSnapshot(transactionsQuery, (snapshot) => {
-      const userTransactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
-      setTransactions(userTransactions);
-    });
+    const goalsChannel = supabase
+      .channel('goals_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'goals',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadGoals();
+        }
+      )
+      .subscribe();
 
-    // Listener for goals
-    const goalsColRef = collection(db, 'users', user.uid, 'goals');
-    const unsubscribeGoals = onSnapshot(goalsColRef, (snapshot) => {
-      const userGoals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Goal));
-      setGoals(userGoals);
-    });
+    const userProfileChannel = supabase
+      .channel('user_profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (payload.new && typeof payload.new === 'object' && 'points' in payload.new) {
+            setPoints((payload.new as any).points);
+          }
+        }
+      )
+      .subscribe();
 
-    // Cleanup subscriptions on unmount or user change
     return () => {
-        unsubscribeUser();
-        unsubscribeTransactions();
-        unsubscribeGoals();
+      supabase.removeChannel(transactionsChannel);
+      supabase.removeChannel(goalsChannel);
+      supabase.removeChannel(userProfileChannel);
     };
+  }, [user, userProfile]);
 
-  }, [user]);
-
-  const addTransaction = async (transaction: Omit<Transaction, 'id' | 'emotionalState'>) => {
+  const loadTransactions = async () => {
     if (!user) return;
+
     try {
-        const transactionsColRef = collection(db, 'users', user.uid, 'transactions');
-        await addDoc(transactionsColRef, {
-            ...transaction,
-            createdAt: serverTimestamp()
-        });
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+
+      const libTransactions = data?.map(convertSupaToLibTransaction) || [];
+      setTransactions(libTransactions);
     } catch (error) {
-        console.error("Error adding transaction: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not add transaction." });
+      console.error('Error loading transactions:', error);
     }
   };
 
-  const addGoal = async (goal: Omit<Goal, 'id' | 'progress' | 'isCompleted'>) => {
+  const loadGoals = async () => {
     if (!user) return;
+
     try {
-        const newGoal = {
-            ...goal,
-            progress: 0,
-            isCompleted: false,
-            createdAt: serverTimestamp()
-        };
-        const goalsColRef = collection(db, 'users', user.uid, 'goals');
-        await addDoc(goalsColRef, newGoal);
-        toast({ title: "Goal Added!", description: "Let's start working on it!" });
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const libGoals = data?.map(convertSupaToLibGoal) || [];
+      setGoals(libGoals);
     } catch (error) {
-        console.error("Error adding goal: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not add goal." });
+      console.error('Error loading goals:', error);
     }
+  };
+
+  const addTransaction = async (transaction: Omit<LibTransaction, 'id' | 'emotionalState'>) => {
+    if (!user) return;
+    
+    try {
+      const supaTransaction = {
+        user_id: user.id,
+        amount: transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
+        description: transaction.description,
+        category: transaction.category,
+        date: transaction.date,
+        emotional_state: null, // Will be set by AI analysis later
+      };
+
+      const { error } = await supabase
+        .from('transactions')
+        .insert(supaTransaction);
+
+      if (error) throw error;
+
+      toast({ title: "Transaction Added!", description: "Your expense has been recorded." });
+    } catch (error) {
+      console.error("Error adding transaction: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not add transaction." });
+    }
+  };
+
+  const addGoal = async (goal: Omit<LibGoal, 'id' | 'progress' | 'isCompleted'>) => {
+    if (!user) return;
+    
+    try {
+      const supaGoal = {
+        user_id: user.id,
+        title: goal.title,
+        description: goal.description || null,
+        target_amount: 1000, // Default target amount since it's not in the lib Goal type
+        current_amount: 0,
+        deadline: null,
+        category: getCategoryFromEmoji(goal.emoji),
+        points: goal.points,
+        progress: 0,
+        is_completed: false,
+      };
+
+      const { error } = await supabase
+        .from('goals')
+        .insert(supaGoal);
+
+      if (error) throw error;
+
+      toast({ title: "Goal Added!", description: "Let's start working on it!" });
+    } catch (error) {
+      console.error("Error adding goal: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not add goal." });
+    }
+  };
+
+  // Helper function to get category from emoji
+  const getCategoryFromEmoji = (emoji: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      '🍕': 'food',
+      '🚗': 'transport',
+      '🎬': 'entertainment',
+      '🛍️': 'shopping',
+      '🏥': 'health',
+      '📚': 'education',
+      '💰': 'savings',
+      '✈️': 'travel',
+    };
+    return categoryMap[emoji] || 'other';
   };
 
   const completeGoal = async (goalId: string) => {
     if (!user) return;
+    
     const goal = goals.find(g => g.id === goalId);
     if (!goal || goal.isCompleted) return;
 
     try {
-        const goalRef = doc(db, 'users', user.uid, 'goals', goalId);
-        await updateDoc(goalRef, {
-            isCompleted: true,
-            progress: 100,
-        });
+      // Update goal
+      const { error: goalError } = await supabase
+        .from('goals')
+        .update({
+          is_completed: true,
+          progress: 100,
+        })
+        .eq('id', goalId);
 
-        const userRef = doc(db, 'users', user.uid);
-        const newPoints = points + goal.points;
-        await updateDoc(userRef, {
-            points: newPoints
-        });
-        
-        toast({
-            title: 'Goal Completed! 🎉',
-            description: `You've earned ${goal.points} Zen Points! Keep it up!`,
-        });
+      if (goalError) throw goalError;
+
+      // Update user points
+      const newPoints = points + goal.points;
+      const { error: userError } = await supabase
+        .from('user_profiles')
+        .update({
+          points: newPoints
+        })
+        .eq('id', user.id);
+
+      if (userError) throw userError;
+      
+      toast({
+        title: 'Goal Completed! 🎉',
+        description: `You've earned ${goal.points} Zen Points! Keep it up!`,
+      });
     } catch (error) {
-        console.error("Error completing goal: ", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not complete goal." });
+      console.error("Error completing goal: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not complete goal." });
     }
   };
 

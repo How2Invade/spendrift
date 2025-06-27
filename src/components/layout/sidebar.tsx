@@ -28,7 +28,7 @@ const links = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { signOut, user } = useAuth();
+  const { signOut, user, userProfile } = useAuth();
 
   return (
     <div className="h-full flex flex-col bg-card border-r border-border">
@@ -39,7 +39,9 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="font-retro text-primary text-sm font-medium">SPENDRIFT</span>
-            <span className="font-mono text-xs text-muted-foreground truncate max-w-[150px]">{user?.email}</span>
+            <span className="font-mono text-xs text-muted-foreground truncate max-w-[150px]">
+              {userProfile?.display_name || user?.email || 'User'}
+            </span>
           </div>
         </div>
       </SidebarHeader>

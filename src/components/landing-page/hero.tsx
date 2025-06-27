@@ -720,7 +720,7 @@ const TechStackSection = () => {
     { name: "Next.js 15", category: "Framework" },
     { name: "Google Genkit", category: "AI/ML" },
     { name: "Gemini 2.0", category: "LLM" },
-    { name: "Firebase", category: "Backend" },
+    { name: "Supabase", category: "Backend" },
     { name: "TypeScript", category: "Language" },
     { name: "Tailwind CSS", category: "Styling" },
     { name: "Framer Motion", category: "Animation" },

@@ -2,21 +2,14 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  onAuthStateChanged, 
-  User, 
-  signOut as firebaseSignOut, 
-  signInWithPopup, 
-  GoogleAuthProvider,
-  AuthError 
-} from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { supabase, type UserProfile } from '@/lib/supabase';
+import { User, Session } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextProps {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -26,92 +19,170 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadUserProfile(session.user.id);
+      }
       setLoading(false);
     });
-    return () => unsubscribe();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await loadUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+      }
+      
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const handleAuthError = (error: AuthError) => {
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
+        console.error('Error loading user profile:', error);
+        return;
+      }
+
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
+  const handleAuthError = (error: any) => {
     console.error("Authentication Error:", error);
     let message = "An unexpected error occurred.";
-    switch (error.code) {
-        case 'auth/popup-closed-by-user':
-            message = "Sign-in was cancelled. Please try again.";
-            break;
-        case 'auth/popup-blocked':
-            message = "Pop-up was blocked. Please allow pop-ups and try again.";
-            break;
-        case 'auth/account-exists-with-different-credential':
-            message = "An account already exists with this email address.";
-            break;
-        case 'auth/cancelled-popup-request':
-            message = "Only one sign-in popup is allowed at a time.";
-            break;
-        default:
-            message = "Authentication failed. Please try again.";
-            break;
+    
+    if (error?.message) {
+      if (error.message.includes('popup')) {
+        message = "Sign-in was cancelled or blocked. Please try again.";
+      } else if (error.message.includes('network')) {
+        message = "Network error. Please check your connection and try again.";
+      } else {
+        message = error.message;
+      }
     }
-    toast({ variant: 'destructive', title: 'Authentication Failed', description: message });
-  }
+    
+    toast({ 
+      variant: 'destructive', 
+      title: 'Authentication Failed', 
+      description: message 
+    });
+  };
 
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      const provider = new GoogleAuthProvider();
-      provider.addScope('email');
-      provider.addScope('profile');
       
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Check if user document exists, if not create one
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (!userDoc.exists()) {
-        // Create a document for the new user in Firestore
-        await setDoc(userDocRef, {
-          email: user.email,
-          uid: user.uid,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          points: 100, // Starting points
-          createdAt: new Date(),
-          provider: 'google'
-        });
-        toast({ title: "Welcome to SpenDrift!", description: "Your account has been created successfully." });
-      } else {
-        toast({ title: "Welcome back!", description: "You've successfully signed in." });
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
       }
       
-      router.push('/dashboard');
+      // Note: For OAuth, the user will be redirected, so we won't reach this point
+      // The actual user creation happens in the onAuthStateChange callback
+      
     } catch (error) {
-      handleAuthError(error as AuthError);
-    } finally {
+      handleAuthError(error);
       setLoading(false);
+    }
+  };
+
+  const createUserProfile = async (user: User) => {
+    try {
+      const userProfile: UserProfile = {
+        id: user.id,
+        email: user.email || '',
+        display_name: user.user_metadata?.full_name || user.email || '',
+        photo_url: user.user_metadata?.avatar_url || null,
+        points: 100, // Starting points
+        created_at: new Date().toISOString(),
+        provider: 'google'
+      };
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert(userProfile, { onConflict: 'id' });
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+      } else {
+        setUserProfile(userProfile);
+        toast({ 
+          title: "Welcome to SpenDrift!", 
+          description: "Your account has been set up successfully." 
+        });
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
     }
   };
 
   const signOut = async () => {
     try {
-      await firebaseSignOut(auth);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+      
+      setUser(null);
+      setUserProfile(null);
       router.push('/');
-      toast({ title: "Signed Out", description: "You've been successfully signed out." });
+      toast({ 
+        title: "Signed Out", 
+        description: "You've been successfully signed out." 
+      });
     } catch (error) {
       console.error("Sign Out Error:", error);
-      toast({ variant: 'destructive', title: 'Error Signing Out', description: 'Please try again.' });
+      toast({ 
+        variant: 'destructive', 
+        title: 'Error Signing Out', 
+        description: 'Please try again.' 
+      });
     }
   };
 
+  // Create user profile when user signs in for the first time
+  useEffect(() => {
+    if (user && !userProfile && !loading) {
+      createUserProfile(user);
+    }
+  }, [user, userProfile, loading]);
+
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );

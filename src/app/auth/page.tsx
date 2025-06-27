@@ -24,9 +24,10 @@ export default function AuthPage() {
     setIsSigningIn(true);
     try {
       await signInWithGoogle();
+      // Note: signInWithGoogle will redirect to Google's OAuth page
+      // User will be redirected back to /dashboard after successful auth
     } catch (error) {
       // Error is handled in the auth context
-    } finally {
       setIsSigningIn(false);
     }
   };
