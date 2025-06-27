@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { SpenDriftLogo } from '@/components/icons';
-import { LayoutGrid, BarChart2, Trophy, PlusCircle } from 'lucide-react';
+import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/theme-toggle';
 
@@ -32,6 +32,12 @@ const links = [
     label: 'Goals',
     icon: Trophy,
     emoji: '🏆',
+  },
+  {
+    href: '/guidance',
+    label: 'Guidance',
+    icon: MessageCircle,
+    emoji: '💬',
   },
   {
     href: '/add-expense',
