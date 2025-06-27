@@ -1,11 +1,12 @@
 'use client';
 
-import { DollarSign, CreditCard, PiggyBank, Smile } from 'lucide-react';
+import { DollarSign, CreditCard, PiggyBank, Smile, HeartPulse, Sparkles, Zap } from 'lucide-react';
 import RecentTransactions from '@/components/dashboard/recent-transactions';
 import SpendingAdvice from '@/components/dashboard/spending-advice';
 import ParentAlert from '@/components/dashboard/parent-alert';
 import FinancialForecast from '@/components/dashboard/financial-forecast';
 import FinancialHealthCheck from '@/components/dashboard/financial-health-check';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function DashboardPage() {
   const summaryData = [
@@ -57,7 +58,7 @@ export default function DashboardPage() {
         {summaryData.map((data, index) => (
           <div
             key={data.title}
-            className="bg-card border border-border rounded-lg p-6 hover:border-primary/30 transition-colors duration-200"
+            className="bg-card border border-border rounded-lg p-6 hover:border-primary/30 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 rounded-md bg-primary/10 border border-primary/20">
@@ -84,21 +85,27 @@ export default function DashboardPage() {
       </div>
 
       {/* Main content grid */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="mb-4">
-              <h3 className="font-mono text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                Recent Transactions
-              </h3>
-            </div>
-            <RecentTransactions />
-          </div>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-start">
+        <div className="lg:col-span-2">
+          <RecentTransactions />
         </div>
-        <div className="flex flex-col gap-8">
-          <FinancialHealthCheck />
-          <SpendingAdvice />
-          <FinancialForecast />
+        <div className="space-y-8">
+          <Tabs defaultValue="health-check" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="health-check"><HeartPulse className="h-4 w-4 mr-2"/>Health</TabsTrigger>
+              <TabsTrigger value="advice"><Sparkles className="h-4 w-4 mr-2"/>Advice</TabsTrigger>
+              <TabsTrigger value="forecast"><Zap className="h-4 w-4 mr-2"/>Forecast</TabsTrigger>
+            </TabsList>
+            <TabsContent value="health-check" className="mt-4">
+              <FinancialHealthCheck />
+            </TabsContent>
+            <TabsContent value="advice" className="mt-4">
+              <SpendingAdvice />
+            </TabsContent>
+            <TabsContent value="forecast" className="mt-4">
+              <FinancialForecast />
+            </TabsContent>
+          </Tabs>
           <ParentAlert />
         </div>
       </div>
