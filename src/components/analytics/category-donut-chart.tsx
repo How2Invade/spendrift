@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { Pie, PieChart, Cell } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useData } from '@/context/data-context';
 import {
   Card,
@@ -16,14 +16,13 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 
 const chartConfig = {
   amount: {
     label: 'Amount (₹)',
+    color: 'hsl(var(--chart-1))',
   },
 } satisfies ChartConfig;
 
@@ -31,78 +30,77 @@ const chartConfig = {
 export default function CategoryDonutChart() {
   const { transactions } = useData();
 
-  const { chartData, topCategory } = useMemo(() => {
+  const chartData = useMemo(() => {
     if (transactions.length === 0) {
-      return { chartData: [], topCategory: null };
+      return [];
     }
 
     const categorySpending = transactions
       .filter(t => t.type === 'expense')
       .reduce((acc, t) => {
-        acc[t.category] = (acc[t.category] || 0) + t.amount;
+        const category = t.category || 'Uncategorized';
+        acc[category] = (acc[category] || 0) + t.amount;
         return acc;
       }, {} as { [key: string]: number });
     
-    const chartColors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-
     const data = Object.entries(categorySpending)
-      .map(([category, amount], index) => ({
+      .map(([category, amount]) => ({
         category,
         amount,
-        fill: chartColors[index % chartColors.length],
       }))
-      .sort((a, b) => b.amount - a.amount);
-      
-    const top = data.length > 0 ? data[0].category : null;
+      .sort((b, a) => a.amount - b.amount);
 
-    return { chartData: data, topCategory: top };
+    return data;
   }, [transactions]);
 
 
   return (
-    <Card className="flex flex-col glassmorphism">
-      <CardHeader className="items-center pb-0">
+    <Card className="flex flex-col glassmorphism h-full">
+      <CardHeader>
         <CardTitle>Category Breakdown</CardTitle>
-        <CardDescription>Where your money really goes...</CardDescription>
+        <CardDescription>A detailed look at your spending by category.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
          {chartData.length > 0 ? (
             <ChartContainer
                 config={chartConfig}
-                className="mx-auto aspect-square max-h-[300px]"
+                className="h-[250px] w-full"
             >
-                <PieChart>
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                    <Pie
-                        data={chartData}
-                        dataKey="amount"
-                        nameKey="category"
-                        innerRadius={60}
-                        strokeWidth={5}
-                    >
-                        {chartData.map((entry) => (
-                            <Cell key={`cell-${entry.category}`} fill={entry.fill} />
-                        ))}
-                    </Pie>
-                    <ChartLegend content={<ChartLegendContent nameKey="category" />} />
-                </PieChart>
+                <BarChart
+                    accessibilityLayer
+                    data={chartData}
+                    layout="vertical"
+                    margin={{
+                    left: 10,
+                    }}
+                >
+                    <CartesianGrid horizontal={false} />
+                    <YAxis
+                    dataKey="category"
+                    type="category"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => value.slice(0, 15)}
+                    />
+                    <XAxis dataKey="amount" type="number" hide />
+                    <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Bar
+                    dataKey="amount"
+                    fill="var(--color-amount)"
+                    radius={5}
+                    />
+                </BarChart>
             </ChartContainer>
         ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+            <div className="flex h-[250px] items-center justify-center text-muted-foreground">
                 No spending data available.
             </div>
         )}
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        {topCategory && (
-            <div className="flex items-center gap-2 font-medium leading-none">
-            {topCategory} is your top category this month <TrendingUp className="h-4 w-4" />
-            </div>
-        )}
-        <div className="leading-none text-muted-foreground">
-          Showing total spending for the last month.
-        </div>
-      </CardFooter>
     </Card>
   );
 }
