@@ -40,7 +40,7 @@ const financialGuidanceChatFlow = ai.defineFlow(
   {
     name: 'financialGuidanceChatFlow',
     inputSchema: FinancialGuidanceChatInputSchema,
-    outputSchema: FinancialGuaidanceChatOutputSchema,
+    outputSchema: FinancialGuidanceChatOutputSchema,
   },
   async (input) => {
     const history = input.history.map((msg) => ({
