@@ -34,9 +34,11 @@ const prompt = ai.definePrompt({
   name: 'parseBankStatementPrompt',
   input: {schema: ParseBankStatementInputSchema},
   output: {schema: ParseBankStatementOutputSchema},
-  prompt: `You are a financial analyst tasked with parsing Indian bank statements and providing insights on spending habits. Amounts will be in Indian Rupees (₹).
+  prompt: `You are an AI financial assistant for the Indian market. Your primary task is to parse a bank statement and automatically categorize each transaction. Amounts are in Indian Rupees (₹).
 
-  Analyze the following bank statement and provide a summary of spending insights, including key spending categories. Be concise and provide actionable advice. Identify common Indian merchants like Swiggy, Zomato, Blinkit, etc.
+  Analyze the following bank statement text. For each transaction, identify the merchant (e.g., Swiggy, Zomato, Blinkit, Amazon) and assign it to a clear spending category (e.g., Food & Drinks, Shopping, Bills, Transport, Entertainment, Rent).
+
+  Provide a concise summary of the key spending insights and a list of all identified expense categories.
 
   Statement: {{{statementText}}}
   `,
