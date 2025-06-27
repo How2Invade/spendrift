@@ -305,16 +305,15 @@ const Hero = () => {
 
       {/* Hero Section */}
       <motion.section 
-        className="relative z-10 min-h-screen flex items-center justify-center px-4"
+        className="relative z-10 hero-center px-4"
         style={{ opacity }}
       >
-        <div className="max-w-6xl mx-auto text-center">
+        <div className="hero-content max-w-6xl mx-auto">
           {/* Status Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-8"
           >
             <Badge className="font-mono text-xs bg-primary/10 text-primary border-primary/30 px-4 py-2">
               <Sparkles className="w-3 h-3 mr-2" />
@@ -327,11 +326,11 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-12 relative flex flex-col items-center justify-center"
+            className="relative flex flex-col items-center justify-center"
           >
             {/* Title with animated sparkles */}
-            <div className="relative flex items-center justify-center mb-6">
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold font-retro text-primary tracking-wider text-center relative">
+            <div className="relative flex items-center justify-center">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold font-retro text-primary tracking-wider text-center relative px-4">
                 SpenDrift
               </h1>
               
@@ -418,7 +417,7 @@ const Hero = () => {
               
             {/* Glowing underline */}
             <motion.div
-              className="h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full mb-8"
+              className="h-1 bg-gradient-to-r from-primary via-accent to-secondary rounded-full"
               initial={{ width: 0 }}
               animate={{ width: "60%" }}
               transition={{ duration: 1.5, delay: 1 }}
@@ -427,8 +426,8 @@ const Hero = () => {
               }}
             />
             
-            <div className="max-w-3xl mx-auto text-center">
-              <p className="text-xl md:text-2xl text-muted-foreground font-mono leading-relaxed">
+            <div className="max-w-3xl mx-auto text-center px-4">
+              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-mono leading-relaxed">
                 Your AI-powered Gen-Z finance buddy that actually gets it. 
                 <motion.span 
                   className="text-primary inline-block"
@@ -454,7 +453,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4"
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -534,7 +533,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-20"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto px-4"
           >
             {stats.map((stat, index) => (
               <motion.div 
@@ -617,12 +616,12 @@ const Hero = () => {
           </motion.div>
         </div>
         
-        {/* Scroll Indicator */}
+        {/* Scroll Indicator - positioned absolutely outside the centered content */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 2 }}
-          className="absolute bottom-12 left-1/2 transform -translate-x-1/2 text-center"
+          className="absolute bottom-12 left-1/2 transform -translate-x-1/2 text-center z-20"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
