@@ -10,17 +10,18 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { SpenDriftLogo } from '@/components/icons';
-import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle, Gem } from 'lucide-react';
+import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle, Gem, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/theme-toggle';
 
 const links = [
   { href: '/dashboard', label: 'DASHBOARD', icon: LayoutGrid, emoji: '⚡', code: '001' },
-  { href: '/analytics', label: 'ANALYTICS', icon: BarChart2, emoji: '�', code: '002' },
-  { href: '/goals', label: 'GOALS', icon: Trophy, emoji: '�', code: '003' },
+  { href: '/analytics', label: 'ANALYTICS', icon: BarChart2, emoji: '📊', code: '002' },
+  { href: '/goals', label: 'GOALS', icon: Trophy, emoji: '🏆', code: '003' },
   { href: '/rewards', label: 'REWARDS', icon: Gem, emoji: '💎', code: '004' },
-  { href: '/guidance', label: 'GUIDANCE', icon: MessageCircle, emoji: '🤖', code: '005' },
-  { href: '/add-expense', label: 'ADD_EXPENSE', icon: PlusCircle, emoji: '�', code: '006' },
+  { href: '/reflection', label: 'REFLECTION', icon: BrainCircuit, emoji: '🔮', code: '005' },
+  { href: '/guidance', label: 'GUIDANCE', icon: MessageCircle, emoji: '🤖', code: '006' },
+  { href: '/add-expense', label: 'ADD_EXPENSE', icon: PlusCircle, emoji: '💸', code: '007' },
 ];
 
 export function AppSidebar() {
