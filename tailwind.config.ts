@@ -10,9 +10,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        retro: ['Orbitron', 'monospace'],
+        mono: ['JetBrains Mono', 'monospace'],
         body: ['"Space Grotesk"', 'sans-serif'],
-        headline: ['"Space Grotesk"', 'sans-serif'],
-        code: ['monospace'],
+        headline: ['Orbitron', 'monospace'],
+        code: ['JetBrains Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',

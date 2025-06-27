@@ -19,10 +19,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <AppSidebar />
-      </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
+      <div className="flex h-screen retro-grid bg-background">
+        <Sidebar className="cyber-sidebar">
+          <AppSidebar />
+        </Sidebar>
+        <SidebarInset className="flex-1 overflow-auto">
+          <div className="relative min-h-full">
+            {/* Scan line effect */}
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-pulse" />
+            {children}
+          </div>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

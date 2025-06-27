@@ -32,35 +32,50 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-foreground">
-      <div className="absolute inset-0 z-0 opacity-5">
-        <Image
-          src="https://placehold.co/1920x1080.png"
-          alt="Abstract money pattern background"
-          data-ai-hint="money pattern"
-          layout="fill"
-          objectFit="cover"
-          priority
-        />
+    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background retro-grid">
+      {/* Matrix-style background effect */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card opacity-90" />
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent to-transparent animate-pulse" />
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-background/50 via-background/80 to-background" />
+      
+      {/* Scan line effect */}
+      <div className="absolute inset-0 z-10 scan-line opacity-30" />
 
-      <main className="z-20 flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-7xl md:text-8xl font-bold font-headline text-primary tracking-tighter animate-fade-in-up">
-          {text}
-          <span className={showCursor ? 'opacity-100 transition-opacity duration-150' : 'opacity-0 transition-opacity duration-150'}>_</span>
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl animate-fade-in-up animation-delay-300">
-          Your Gen-Z finance buddy. Master your money with AI-powered insights, gamified goals, and zero stress.
-        </p>
-        <div className="animate-fade-in-up animation-delay-600">
-          <Button asChild size="lg" className="mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+      <main className="z-20 flex flex-col items-center justify-center text-center p-4 relative">
+        {/* Holographic header container */}
+        <div className="relative p-8 rounded-2xl border border-primary/30 bg-card/10 backdrop-blur-sm holographic mb-8">
+          <h1 className="text-6xl md:text-8xl font-bold font-retro text-primary tracking-wider glow-text retro-fade-in">
+            {text}
+            <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150 text-accent`}>_</span>
+          </h1>
+        </div>
+        
+        <div className="terminal-text mb-8 max-w-2xl retro-fade-in" style={{animationDelay: '0.3s'}}>
+          <p className="matrix-text text-lg md:text-xl">
+            Your Gen-Z finance buddy. Master your money with AI-powered insights, gamified goals, and zero stress.
+          </p>
+        </div>
+        
+        <div className="retro-fade-in" style={{animationDelay: '0.6s'}}>
+          <Button 
+            asChild 
+            size="lg" 
+            className="retro-button text-lg px-8 py-4 font-retro"
+          >
             <Link href="/dashboard">
-              Explore The App
+              Initialize System
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>
+        
+        {/* Floating elements */}
+        <div className="absolute -top-4 -left-4 w-2 h-2 bg-secondary rounded-full animate-pulse" />
+        <div className="absolute -bottom-4 -right-4 w-2 h-2 bg-accent rounded-full animate-pulse" style={{animationDelay: '0.5s'}} />
+        <div className="absolute top-1/2 -left-8 w-1 h-1 bg-primary rounded-full animate-pulse" style={{animationDelay: '1s'}} />
+        <div className="absolute top-1/4 -right-8 w-1 h-1 bg-destructive rounded-full animate-pulse" style={{animationDelay: '1.5s'}} />
       </main>
     </div>
   );
