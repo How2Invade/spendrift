@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
@@ -60,7 +59,7 @@ export default function LandingPage() {
             className="text-lg px-8 py-4 font-retro bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Link href="/dashboard">
-              Enter Dashboard
+              Start Tracking
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>

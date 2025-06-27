@@ -10,9 +10,11 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { SpenDriftLogo } from '@/components/icons';
-import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle, Gem, BrainCircuit } from 'lucide-react';
+import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle, Gem, BrainCircuit, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/theme-toggle';
+import { useAuth } from '@/context/auth-context';
+import { Button } from '../ui/button';
 
 const links = [
   { href: '/dashboard', label: 'DASHBOARD', icon: LayoutGrid, emoji: '⚡', code: '001' },
@@ -26,6 +28,7 @@ const links = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { signOut, user } = useAuth();
 
   return (
     <div className="h-full flex flex-col bg-card border-r border-border">
@@ -36,7 +39,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="font-retro text-primary text-sm font-medium">SPENDRIFT</span>
-            <span className="font-mono text-xs text-muted-foreground">v2.0.25</span>
+            <span className="font-mono text-xs text-muted-foreground truncate max-w-[150px]">{user?.email}</span>
           </div>
         </div>
       </SidebarHeader>
@@ -79,13 +82,20 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       
-      <div className="border-t border-border p-4">
-        <div className="text-xs font-mono text-muted-foreground mb-3">
-          SETTINGS
+      <div className="border-t border-border p-4 space-y-4">
+        <div>
+          <div className="text-xs font-mono text-muted-foreground mb-2">
+            SETTINGS
+          </div>
+          <ThemeToggle />
         </div>
-        <ThemeToggle />
+
+        <Button variant="outline" size="sm" className="w-full justify-start font-mono text-sm" onClick={signOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+        </Button>
         
-        <div className="mt-4 flex items-center gap-2 text-xs font-mono text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
           <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
           <span>ONLINE</span>
         </div>

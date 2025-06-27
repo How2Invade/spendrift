@@ -19,6 +19,8 @@ type Message = {
   content: string;
 };
 
+const INITIAL_MESSAGE = "Hello! I'm FinBot. Please paste your bank statement text, and I can help you analyze it.";
+
 export default function ChatInterface() {
   const { toast } = useToast();
   const [statement, setStatement] = useState('');
@@ -48,7 +50,7 @@ export default function ChatInterface() {
     setMessages([
       {
         role: 'model',
-        content: "Wassguudd how can handle ur bank todayyy",
+        content: INITIAL_MESSAGE,
       },
     ]);
     setChatStarted(true);
@@ -66,8 +68,8 @@ export default function ChatInterface() {
     try {
       const input: FinancialGuidanceChatInput = {
         statementText: statement,
-        // The history should not include the latest bot message.
-        history: newMessages.filter(m => m.role !== 'model' || m.content !== "Wassguudd how can handle ur bank todayyy"),
+        // The history should not include the initial bot message.
+        history: newMessages.filter(m => m.content !== INITIAL_MESSAGE),
       };
       const result = await financialGuidanceChat(input);
       setMessages([...newMessages, { role: 'model', content: result.response }]);
