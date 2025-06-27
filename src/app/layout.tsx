@@ -3,6 +3,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/app-layout';
+import { DataProvider } from '@/context/data-context';
 
 export const metadata: Metadata = {
   title: 'SpenDrift',
@@ -22,7 +23,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
-        <AppLayout>{children}</AppLayout>
+        <DataProvider>
+          <AppLayout>{children}</AppLayout>
+        </DataProvider>
         <Toaster />
       </body>
     </html>

@@ -2,25 +2,32 @@
 
 import { useState } from 'react';
 import { forecastFinancials, type ForecastFinancialsOutput } from '@/ai/flows/forecast-financials';
-import { mockTransactions } from '@/lib/mock-data';
+import { useData } from '@/context/data-context';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Zap, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '../ui/badge';
 
 export default function FinancialForecast() {
   const { toast } = useToast();
+  const { transactions } = useData();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ForecastFinancialsOutput | null>(null);
 
   async function getForecast() {
+    if (transactions.length < 3) {
+      toast({
+        variant: 'default',
+        title: 'Need more data!',
+        description: 'Add at least 3 transactions for an accurate forecast.',
+      });
+      return;
+    }
     setLoading(true);
     setResult(null);
     try {
-      // In a real app, this data would be dynamic
-      const transactionHistory = mockTransactions.map(t => `${t.category},${t.amount},${t.date},${t.type}`).join('\n');
+      const transactionHistory = transactions.map(t => `${t.category},${t.amount},${t.date},${t.type}`).join('\n');
       
       const output = await forecastFinancials({ transactionHistory });
       setResult(output);

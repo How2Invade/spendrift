@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { parseBankStatement, type ParseBankStatementOutput } from '@/ai/flows/parse-bank-statement';
+import { parseBankStatement } from '@/ai/flows/parse-bank-statement';
+import { useData } from '@/context/data-context';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   statementText: z.string().min(50, 'This statement looks a bit empty. Paste more content!'),
@@ -20,8 +20,8 @@ const formSchema = z.object({
 
 export default function StatementParser() {
   const { toast } = useToast();
+  const { addTransaction } = useData();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ParseBankStatementOutput | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,10 +32,22 @@ export default function StatementParser() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    setResult(null);
     try {
       const output = await parseBankStatement(values);
-      setResult(output);
+      if (output.transactions && output.transactions.length > 0) {
+        output.transactions.forEach(tx => addTransaction(tx));
+        toast({
+            title: 'Statement Processed! ✨',
+            description: `Successfully added ${output.transactions.length} new transactions.`,
+        });
+        form.reset();
+      } else {
+         toast({
+            variant: 'default',
+            title: 'No transactions found.',
+            description: 'The AI couldn\'t find any transactions to add from the text provided.',
+        });
+      }
     } catch (error) {
       console.error(error);
       toast({
@@ -72,26 +84,10 @@ export default function StatementParser() {
             />
             <Button type="submit" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
-              Analyze Statement
+              Analyze & Add Transactions
             </Button>
           </form>
         </Form>
-        {result && (
-          <div className="mt-6 p-4 bg-primary/10 rounded-lg space-y-4">
-            <div>
-              <h3 className="font-bold">Spending Insights:</h3>
-              <p className="text-sm">{result.spendingInsights}</p>
-            </div>
-            <div>
-              <h3 className="font-bold">Expense Categories:</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {result.categories.map((cat) => (
-                  <Badge key={cat} variant="secondary">{cat}</Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

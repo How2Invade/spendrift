@@ -5,7 +5,7 @@ export type Transaction = {
   amount: number;
   date: string;
   type: 'income' | 'expense';
-  emotionalState: 'impulse' | 'need' | 'want';
+  emotionalState?: 'impulse' | 'need' | 'want';
 };
 
 export type Goal = {
@@ -14,4 +14,6 @@ export type Goal = {
   description: string;
   emoji: string;
   progress: number;
+  points: number;
+  isCompleted: boolean;
 };

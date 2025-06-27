@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { parseExpenseChat, type ParseExpenseChatOutput } from '@/ai/flows/parse-expense-chat';
+import { parseExpenseChat } from '@/ai/flows/parse-expense-chat';
+import { useData } from '@/context/data-context';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -19,8 +20,8 @@ const formSchema = z.object({
 
 export default function ChatParser() {
   const { toast } = useToast();
+  const { addTransaction } = useData();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ParseExpenseChatOutput | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,10 +32,14 @@ export default function ChatParser() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    setResult(null);
     try {
       const output = await parseExpenseChat(values);
-      setResult(output);
+      addTransaction({ ...output, type: 'expense' }); // Assuming chat parser is for expenses
+      toast({
+        title: 'Expense Added! 💸',
+        description: `Logged "${output.description}" for ₹${output.amount}.`,
+      });
+      form.reset();
     } catch (error) {
       console.error(error);
       toast({
@@ -71,19 +76,10 @@ export default function ChatParser() {
             />
             <Button type="submit" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-              Parse Expense
+              Parse & Add Expense
             </Button>
           </form>
         </Form>
-        {result && (
-          <div className="mt-6 p-4 bg-primary/10 rounded-lg space-y-2">
-            <h3 className="font-bold">Parsed Expense:</h3>
-            <p><strong>Category:</strong> {result.category}</p>
-            <p><strong>Amount:</strong> ₹{result.amount.toFixed(2)}</p>
-            <p><strong>Date:</strong> {result.date}</p>
-            <p><strong>Description:</strong> {result.description}</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
