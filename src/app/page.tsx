@@ -58,19 +58,9 @@ export default function LandingPage() {
             size="lg" 
             className="text-lg px-8 py-4 font-retro bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            <Link href="/dashboard">
-              Start Tracking
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-           <Button 
-            asChild 
-            size="lg" 
-            variant="outline"
-            className="text-lg px-8 py-4 font-retro"
-          >
             <Link href="/login">
-              Log In
+              Login / Sign Up
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>
