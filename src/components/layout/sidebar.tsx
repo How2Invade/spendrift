@@ -61,19 +61,17 @@ export function AppSidebar() {
         <SidebarMenu>
           {links.map((link) => (
             <SidebarMenuItem key={link.href}>
-              <Link href={link.href} passHref>
-                <SidebarMenuButton
-                  isActive={pathname === link.href}
-                  className="w-full justify-start gap-3"
-                  asChild
-                >
-                  <a>
-                    <link.icon className="h-5 w-5" />
-                    <span className="truncate">{link.label}</span>
-                    <span className="ml-auto">{link.emoji}</span>
-                  </a>
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                isActive={pathname === link.href}
+                className="w-full justify-start gap-3"
+                asChild
+              >
+                <Link href={link.href}>
+                  <link.icon className="h-5 w-5" />
+                  <span className="truncate">{link.label}</span>
+                  <span className="ml-auto">{link.emoji}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
