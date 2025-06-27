@@ -1,22 +1,26 @@
 'use client';
 
+import React from 'react';
 import { useData } from '@/context/data-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export default function RecentTransactions() {
+export default function RecentTransactions({ action }: { action?: React.ReactNode }) {
   const { transactions } = useData();
   const recentTransactions = transactions.slice(0, 5);
 
   return (
     <Card className="glassmorphism">
-      <CardHeader>
-        <CardTitle>Recent Transactions 🧾</CardTitle>
-        {transactions.length === 0 && (
-            <CardDescription>Your most recent transactions will appear here once added.</CardDescription>
-        )}
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Recent Transactions 🧾</CardTitle>
+          {transactions.length === 0 && (
+              <CardDescription className="pt-1.5">Your most recent transactions will appear here once added.</CardDescription>
+          )}
+        </div>
+        {action}
       </CardHeader>
       <CardContent>
         {recentTransactions.length > 0 ? (

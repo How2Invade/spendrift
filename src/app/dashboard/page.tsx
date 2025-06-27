@@ -1,12 +1,14 @@
 'use client';
 
-import { DollarSign, CreditCard, PiggyBank, Smile, HeartPulse, Sparkles, Zap } from 'lucide-react';
+import { DollarSign, CreditCard, PiggyBank, Smile, HeartPulse, Sparkles, Zap, PlusCircle } from 'lucide-react';
 import RecentTransactions from '@/components/dashboard/recent-transactions';
 import SpendingAdvice from '@/components/dashboard/spending-advice';
 import ParentAlert from '@/components/dashboard/parent-alert';
 import FinancialForecast from '@/components/dashboard/financial-forecast';
 import FinancialHealthCheck from '@/components/dashboard/financial-health-check';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const summaryData = [
@@ -87,7 +89,16 @@ export default function DashboardPage() {
       {/* Main content grid */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2">
-          <RecentTransactions />
+          <RecentTransactions
+            action={
+              <Button asChild variant="outline" size="sm">
+                <Link href="/add-expense">
+                  <PlusCircle className="mr-2" />
+                  Add Expense
+                </Link>
+              </Button>
+            }
+          />
         </div>
         <div className="space-y-8">
           <Tabs defaultValue="health-check" className="w-full">
