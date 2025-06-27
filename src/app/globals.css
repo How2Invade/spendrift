@@ -114,56 +114,89 @@
   100% { transform: translate(0); }
 }
 
-/* Hero section specific animations */
+/* Enhanced animations for the hero section */
+@keyframes floating {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(5deg); }
+  50% { transform: translateY(-5px) rotate(-3deg); }
+  75% { transform: translateY(-15px) rotate(2deg); }
+}
+
 @keyframes pulse-glow {
   0%, 100% { 
-    box-shadow: 0 0 5px hsl(var(--primary) / 0.3),
-                0 0 10px hsl(var(--primary) / 0.2),
-                0 0 15px hsl(var(--primary) / 0.1);
+    box-shadow: 0 0 5px currentColor;
+    opacity: 0.8;
   }
   50% { 
-    box-shadow: 0 0 10px hsl(var(--primary) / 0.4),
-                0 0 20px hsl(var(--primary) / 0.3),
-                0 0 30px hsl(var(--primary) / 0.2);
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes slide-in-left {
-  0% {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  100% {
+    box-shadow: 0 0 25px currentColor, 0 0 35px currentColor;
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
-@keyframes slide-in-right {
-  0% {
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes text-glow {
+  0%, 100% { text-shadow: 0 0 5px currentColor; }
+  50% { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+}
+
+@keyframes bounce-in {
+  0% { 
+    transform: scale(0.3) rotate(-10deg);
     opacity: 0;
-    transform: translateX(50px);
   }
-  100% {
+  50% { 
+    transform: scale(1.05) rotate(5deg);
+    opacity: 0.8;
+  }
+  70% { 
+    transform: scale(0.9) rotate(-2deg);
+    opacity: 0.9;
+  }
+  100% { 
+    transform: scale(1) rotate(0deg);
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
-@keyframes text-reveal {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.floating {
+  animation: floating 6s ease-in-out infinite;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.text-glow {
+  animation: text-glow 3s ease-in-out infinite;
+}
+
+.bounce-in {
+  animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Utility classes for retro effects */
@@ -359,100 +392,146 @@
   animation: glitch 0.3s ease-in-out infinite;
 }
 
-/* Retro button hover effects */
-.retro-cta-button {
-  position: relative;
-  overflow: hidden;
-  border: 2px solid hsl(var(--primary));
-  background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
-  transition: all 0.3s ease;
+/* Hero section specific animations */
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px hsl(var(--primary) / 0.3),
+                0 0 10px hsl(var(--primary) / 0.2),
+                0 0 15px hsl(var(--primary) / 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.4),
+                0 0 20px hsl(var(--primary) / 0.3),
+                0 0 30px hsl(var(--primary) / 0.2);
+  }
 }
 
-.retro-cta-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s ease;
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
-.retro-cta-button:hover::before {
-  left: 100%;
+@keyframes slide-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.retro-cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px hsl(var(--primary) / 0.3);
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* Section divider */
-.section-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
-  margin: 4rem 0;
+@keyframes text-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Feature card animations */
-.feature-card {
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+/* Financial-themed animations */
+@keyframes money-rain {
+  0% { 
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { 
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
 }
 
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+@keyframes ticker-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
-.feature-card:hover::before {
-  transform: translateX(100%);
+@keyframes coin-flip {
+  0% { transform: rotateY(0deg) scale(1); }
+  25% { transform: rotateY(90deg) scale(0.8); }
+  50% { transform: rotateY(180deg) scale(1); }
+  75% { transform: rotateY(270deg) scale(0.8); }
+  100% { transform: rotateY(360deg) scale(1); }
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
+@keyframes currency-float {
+  0%, 100% { 
+    transform: translateY(0px) scale(1);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.6;
+  }
 }
 
-/* Typing cursor animation */
-@keyframes cursor-blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+@keyframes chart-draw {
+  0% { stroke-dasharray: 0 1000; }
+  100% { stroke-dasharray: 1000 0; }
 }
 
-.typing-cursor {
-  animation: cursor-blink 1s infinite;
+.money-rain {
+  animation: money-rain 3s linear infinite;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+.ticker-scroll {
+  animation: ticker-scroll 30s linear infinite;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+.coin-flip {
+  animation: coin-flip 2s ease-in-out infinite;
 }
 
-::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+.currency-float {
+  animation: currency-float 4s ease-in-out infinite;
 }
 
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
-  border-radius: 4px;
+.chart-draw {
+  stroke-dasharray: 1000;
+  animation: chart-draw 3s ease-in-out infinite;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
+/* Financial glow effects */
+.financial-glow {
+  box-shadow: 
+    0 0 5px rgba(34, 197, 94, 0.3),
+    0 0 10px rgba(34, 197, 94, 0.2),
+    0 0 15px rgba(34, 197, 94, 0.1);
+}
+
+.financial-glow:hover {
+  box-shadow: 
+    0 0 10px rgba(34, 197, 94, 0.5),
+    0 0 20px rgba(34, 197, 94, 0.3),
+    0 0 30px rgba(34, 197, 94, 0.2);
+}
+
+/* Money-themed gradients */
+.money-gradient {
+  background: linear-gradient(135deg, #22c55e 0%, #eab308 50%, #f59e0b 100%);
+}
+
+.wealth-gradient {
+  background: linear-gradient(45deg, #ffd700, #ffed4e, #fbbf24, #f59e0b);
+  background-size: 300% 300%;
+  animation: holographic-shift 4s ease infinite;
 }
 
 @layer base {
@@ -689,47 +768,128 @@ html {
   }
 }
 
-/* Retro grid overlay */
-.retro-grid-overlay {
-  background-image: 
-    linear-gradient(rgba(120, 199, 117, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 199, 117, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  position: relative;
+/* Financial-themed animations */
+@keyframes money-rain {
+  0% { 
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { 
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
 }
 
-.retro-grid-overlay::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 50% 50%, transparent 0%, hsl(var(--background)) 70%);
-  pointer-events: none;
+@keyframes ticker-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
-/* Glowing text effect */
-.glow-text-subtle {
-  text-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+@keyframes coin-flip {
+  0% { transform: rotateY(0deg) scale(1); }
+  25% { transform: rotateY(90deg) scale(0.8); }
+  50% { transform: rotateY(180deg) scale(1); }
+  75% { transform: rotateY(270deg) scale(0.8); }
+  100% { transform: rotateY(360deg) scale(1); }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+@keyframes currency-float {
+  0%, 100% { 
+    transform: translateY(0px) scale(1);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.6;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+@keyframes chart-draw {
+  0% { stroke-dasharray: 0 1000; }
+  100% { stroke-dasharray: 1000 0; }
 }
 
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
-  border-radius: 4px;
+.money-rain {
+  animation: money-rain 3s linear infinite;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
+.ticker-scroll {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+.coin-flip {
+  animation: coin-flip 2s ease-in-out infinite;
+}
+
+.currency-float {
+  animation: currency-float 4s ease-in-out infinite;
+}
+
+.chart-draw {
+  stroke-dasharray: 1000;
+  animation: chart-draw 3s ease-in-out infinite;
+}
+
+/* Financial glow effects */
+.financial-glow {
+  box-shadow: 
+    0 0 5px rgba(34, 197, 94, 0.3),
+    0 0 10px rgba(34, 197, 94, 0.2),
+    0 0 15px rgba(34, 197, 94, 0.1);
+}
+
+.financial-glow:hover {
+  box-shadow: 
+    0 0 10px rgba(34, 197, 94, 0.5),
+    0 0 20px rgba(34, 197, 94, 0.3),
+    0 0 30px rgba(34, 197, 94, 0.2);
+}
+
+/* Money-themed gradients */
+.money-gradient {
+  background: linear-gradient(135deg, #22c55e 0%, #eab308 50%, #f59e0b 100%);
+}
+
+.wealth-gradient {
+  background: linear-gradient(45deg, #ffd700, #ffed4e, #fbbf24, #f59e0b);
+  background-size: 300% 300%;
+  animation: holographic-shift 4s ease infinite;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/30 backdrop-blur-lg border border-border/30 rounded-xl shadow-lg;
+  }
+}
+
+@layer utilities {
+  .preloader-overlay {
+    @apply fixed inset-0 z-[100] flex items-center justify-center bg-background;
+  }
+
+  .animate-fade-in-up {
+    @apply animate-in slide-in-from-bottom-4 fade-in duration-700;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
 }
 
 * {
