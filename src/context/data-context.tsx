@@ -181,6 +181,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const addTransaction = async (transaction: Omit<LibTransaction, 'id' | 'emotionalState'>) => {
     if (!user) return;
     
+    // Optimistically update UI
+    setTransactions(prev => [
+      {
+        ...transaction,
+        id: 'temp-' + Date.now(),
+        emotionalState: undefined,
+      },
+      ...prev,
+    ]);
+
     try {
       const supaTransaction = {
         user_id: user.id,
