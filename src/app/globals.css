@@ -568,10 +568,6 @@
   }
 }
 
-* {
-  border-color: hsl(var(--border));
-}
-
 /* Utility classes for perfect centering */
 .hero-center {
   display: flex;
@@ -591,10 +587,61 @@
   gap: 2rem;
 }
 
+/* Preloader specific styles */
+.preloader-glow {
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.preloader-text {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+/* SVG text styling for better rendering */
+svg text {
+  font-family: 'Orbitron', monospace !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.1em !important;
+}
+
+.preloader-pulse {
+  animation: preloader-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes preloader-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.preloader-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(120, 199, 117, 0.2),
+    transparent
+  );
+  animation: preloader-shimmer 1.5s infinite;
+}
+
+@keyframes preloader-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Ensure no margin collapse issues */
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll during animations */
 }
 
 html {
