@@ -15,7 +15,7 @@ export default function RecentTransactions() {
       <CardHeader>
         <CardTitle>Recent Transactions 🧾</CardTitle>
         {transactions.length === 0 && (
-            <CardDescription>You haven't added any transactions yet. Go to the "Add Expense" page to start tracking!</CardDescription>
+            <CardDescription>Your most recent transactions will appear here once added.</CardDescription>
         )}
       </CardHeader>
       <CardContent>
@@ -50,7 +50,7 @@ export default function RecentTransactions() {
           </Table>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            Your recent transactions will appear here.
+            No transactions yet.
           </div>
         )}
       </CardContent>
