@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,32 +21,9 @@ import {
 } from 'lucide-react';
 
 const Hero = () => {
-  const [text, setText] = useState('');
-  const [showCursor, setShowCursor] = useState(true);
-  const fullText = 'SpenDrift';
-  
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-
-  useEffect(() => {
-    let index = 0;
-    setText('');
-    const typingInterval = setInterval(() => {
-      if (index < fullText.length) {
-        setText((prev) => prev + fullText.charAt(index));
-        index++;
-      } else {
-        clearInterval(typingInterval);
-        const cursorInterval = setInterval(() => {
-          setShowCursor((prev) => !prev);
-        }, 500);
-        return () => clearInterval(cursorInterval);
-      }
-    }, 150);
-
-    return () => clearInterval(typingInterval);
-  }, []);
 
   const features = [
     {
@@ -131,8 +108,7 @@ const Hero = () => {
             className="mb-8"
           >
             <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold font-retro text-primary mb-4 tracking-wider">
-              {text}
-              <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150 text-accent`}>_</span>
+              SpenDrift
             </h1>
             <div className="max-w-3xl mx-auto">
               <p className="text-xl md:text-2xl text-muted-foreground font-mono leading-relaxed">
