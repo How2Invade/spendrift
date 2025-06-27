@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { DataProvider } from '@/context/data-context';
 import { ThemeProvider } from '@/components/theme-provider';
-import { ConditionalLayout } from '@/components/layout/conditional-layout';
+import { AppWrapper } from '@/components/layout/app-wrapper';
 
 export const metadata: Metadata = {
   title: 'SpenDrift',
@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={cn('font-body antialiased min-h-screen bg-background font-sans')}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <DataProvider>
-            <ConditionalLayout>{children}</ConditionalLayout>
+            <AppWrapper>{children}</AppWrapper>
           </DataProvider>
           <Toaster />
         </ThemeProvider>
