@@ -465,7 +465,7 @@ const Hero = () => {
                 size="lg" 
                 className="font-retro text-lg px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground group relative overflow-hidden"
               >
-                <Link href="/dashboard">
+                <Link href="/auth">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     initial={{ x: '-100%' }}
@@ -473,7 +473,7 @@ const Hero = () => {
                     transition={{ duration: 0.6 }}
                   />
                   <span className="relative z-10 flex items-center">
-                    Enter Dashboard
+                    Get Started
                     <motion.div
                       className="ml-2"
                       animate={{ x: [0, 5, 0] }}
@@ -504,26 +504,29 @@ const Hero = () => {
               whileTap={{ scale: 0.95 }}
             >
               <Button 
+                asChild
                 variant="outline" 
                 size="lg" 
                 className="font-mono text-lg px-8 py-4 border-primary/30 hover:bg-primary/10 group relative overflow-hidden"
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5"
-                  initial={{ scale: 0 }}
-                  whileHover={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                />
-                <span className="relative z-10 flex items-center">
+                <Link href="/auth">
                   <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="mr-2"
-                  >
-                    <Zap className="h-5 w-5" />
-                  </motion.div>
-                  Live Demo
-                </span>
+                    className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5"
+                    initial={{ scale: 0 }}
+                    whileHover={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <span className="relative z-10 flex items-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="mr-2"
+                    >
+                      <Zap className="h-5 w-5" />
+                    </motion.div>
+                    Sign In
+                  </span>
+                </Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -808,7 +811,7 @@ const CTASection = () => {
               size="lg" 
               className="font-retro text-xl px-12 py-6 bg-primary hover:bg-primary/90 text-primary-foreground group"
             >
-              <Link href="/dashboard">
+              <Link href="/auth">
                 Start Your Journey
                 <Sparkles className="ml-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
               </Link>
