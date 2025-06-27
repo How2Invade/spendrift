@@ -433,17 +433,17 @@ const Hero = () => {
                   className="text-primary inline-block"
                   whileHover={{ scale: 1.05, color: "#78c775" }}
                   transition={{ type: "spring", stiffness: 300 }}
-                > Master your money</motion.span> with insights, 
+                >‎ Master your money</motion.span> with insights, 
                 <motion.span 
                   className="text-accent inline-block"
                   whileHover={{ scale: 1.05, color: "#f59e0b" }}
                   transition={{ type: "spring", stiffness: 300 }}
-                > gamified goals</motion.span>, and 
+                > gamified goals</motion.span>,and 
                 <motion.span 
                   className="text-secondary inline-block"
                   whileHover={{ scale: 1.05, color: "#8b5cf6" }}
                   transition={{ type: "spring", stiffness: 300 }}
-                > zero financial stress</motion.span>.
+                >‎  zero financial stress</motion.span>.
               </p>
             </div>
           </motion.div>
