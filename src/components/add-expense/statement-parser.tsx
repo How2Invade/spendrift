@@ -22,16 +22,16 @@ const pasteSchema = z.object({
 });
 
 // Schema for file upload form
-const MAX_FILE_SIZE = 1024 * 1024; // 1MB
-const ACCEPTED_FILE_TYPES = ['text/plain', 'text/csv'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_FILE_TYPES = ['text/plain', 'text/csv', 'application/pdf', 'image/png', 'image/jpeg'];
 const uploadSchema = z.object({
     file: z
     .custom<FileList>()
     .refine((files) => files?.length === 1, 'File is required.')
-    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 1MB.`)
+    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
     .refine(
       (files) => ACCEPTED_FILE_TYPES.includes(files?.[0]?.type),
-      'Only .txt and .csv files are accepted.'
+      'Only .txt, .csv, .pdf, .png, and .jpg files are accepted.'
     ),
 });
 
@@ -52,10 +52,10 @@ export default function StatementParser() {
   });
 
   // Shared function to run analysis
-  const runAnalysis = async (text: string) => {
+  const runAnalysis = async (dataUri: string) => {
     setLoading(true);
     try {
-      const output = await parseBankStatement({ statementText: text });
+      const output = await parseBankStatement({ statementDataUri: dataUri });
       if (output.transactions && output.transactions.length > 0) {
         output.transactions.forEach(tx => addTransaction(tx));
         toast({
@@ -68,7 +68,7 @@ export default function StatementParser() {
          toast({
             variant: 'default',
             title: 'No transactions found.',
-            description: 'The AI couldn\'t find any transactions to add from the text provided.',
+            description: 'The AI couldn\'t find any transactions to add from the content provided.',
         });
       }
     } catch (error) {
@@ -84,21 +84,23 @@ export default function StatementParser() {
   }
 
   const onPasteSubmit = (values: z.infer<typeof pasteSchema>) => {
-    runAnalysis(values.statementText);
+    const base64Text = btoa(unescape(encodeURIComponent(values.statementText)));
+    const dataUri = `data:text/plain;base64,${base64Text}`;
+    runAnalysis(dataUri);
   }
 
   const onUploadSubmit = (values: z.infer<typeof uploadSchema>) => {
     const file = values.file[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-        const text = e.target?.result as string;
-        if (text) {
-            runAnalysis(text);
+        const dataUri = e.target?.result as string;
+        if (dataUri) {
+            runAnalysis(dataUri);
         } else {
              toast({
                 variant: 'destructive',
-                title: 'File is empty.',
-                description: 'The uploaded file appears to be empty. Please check it and try again.',
+                title: 'File is empty or corrupted.',
+                description: 'Could not read the file. Please check it and try again.',
             });
         }
     };
@@ -109,7 +111,7 @@ export default function StatementParser() {
             description: 'There was an issue reading your file. Please try again.',
         });
     }
-    reader.readAsText(file);
+    reader.readAsDataURL(file);
   }
 
 
@@ -117,7 +119,7 @@ export default function StatementParser() {
     <Card className="glassmorphism">
       <CardHeader>
         <CardTitle>Statement Import 📄</CardTitle>
-        <CardDescription>Import transactions by pasting text or uploading a file. The AI will do the heavy lifting.</CardDescription>
+        <CardDescription>Import transactions by pasting text or uploading a file (txt, csv, pdf, png, jpg). The AI will do the heavy lifting.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="paste" className="w-full">
@@ -160,7 +162,7 @@ export default function StatementParser() {
                           <FormControl>
                             <Input 
                                 type="file" 
-                                accept=".txt,.csv" 
+                                accept=".txt,.csv,.pdf,.png,.jpg,.jpeg" 
                                 onChange={(e) => onChange(e.target.files)} 
                                 {...rest} 
                             />
