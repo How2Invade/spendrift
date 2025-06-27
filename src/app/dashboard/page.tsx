@@ -39,7 +39,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-8 min-h-screen bg-background">
+    <div className="flex flex-col gap-8 p-4 md:p-8 min-h-[100vh] bg-background">
       {/* Header */}
       <header className="relative">
         <div className="mb-2">
@@ -100,7 +100,7 @@ export default function DashboardPage() {
             }
           />
         </div>
-        <div className="space-y-8">
+        <div className="space-y-8 min-h-[540px]">
           <Tabs defaultValue="health-check" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="health-check"><HeartPulse className="h-4 w-4 mr-2"/>Health</TabsTrigger>

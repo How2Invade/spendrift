@@ -49,20 +49,19 @@ export default function FinancialForecast() {
         <CardTitle>Financial Forecast 🔮</CardTitle>
         <CardDescription>Look into your financial future. No cap.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-[300px]">
         {result ? (
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-bold">Cash Flow Forecast 💸:</h4>
-              <p className="text-sm">{result.cashFlowForecast}</p>
+          <div className="space-y-4 text-sm">
+            <div className="text-center p-4 bg-muted rounded-lg">
+              <p className="font-bold text-lg">{result.cashFlowForecast}</p>
             </div>
             <div>
-              <h4 className="font-bold">Risk Assessment 🚨:</h4>
-              <p className="text-sm">{result.riskAssessment}</p>
+              <h4 className="font-bold mb-2">Risk Assessment 🚨</h4>
+              <p className="text-muted-foreground">{result.riskAssessment}</p>
             </div>
-             {result.earlyWarnings && result.earlyWarnings.length > 0 && (
+            {result.earlyWarnings && result.earlyWarnings.length > 0 && (
               <div>
-                <h4 className="font-bold">Early Warnings ⚠️:</h4>
+                <h4 className="font-bold mb-2">Early Warnings ⚠️</h4>
                 <ul className="mt-2 space-y-2">
                   {result.earlyWarnings.map((warning, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">

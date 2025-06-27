@@ -53,7 +53,7 @@ export default function FinancialHealthCheck() {
         <CardTitle>Financial Health Check 🩺</CardTitle>
         <CardDescription>Get a quick AI-powered vibe check on your finances.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-[300px]">
         {result ? (
           <div className="space-y-4 text-sm">
              <div className="text-center p-4 bg-muted rounded-lg">

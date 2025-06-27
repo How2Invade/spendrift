@@ -50,20 +50,19 @@ export default function SpendingAdvice() {
         <CardTitle>AI Savings Coach 🧠</CardTitle>
         <CardDescription>Get AI-powered tips to boost your savings.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 min-h-[300px]">
         {result ? (
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-bold">The Tea 🍵:</h4>
-              <p className="text-sm">{result.analysisSummary}</p>
+          <div className="space-y-4 text-sm">
+            <div className="text-center p-4 bg-muted rounded-lg">
+              <p className="font-bold text-lg">{result.analysisSummary}</p>
             </div>
             <div>
-              <h4 className="font-bold">The Glow Up Plan ✨:</h4>
-              <p className="text-sm">{result.advice}</p>
+              <h4 className="font-bold mb-2">The Glow Up Plan ✨</h4>
+              <p className="text-muted-foreground">{result.advice}</p>
             </div>
             {result.emotionalStateTags && result.emotionalStateTags.length > 0 && (
               <div>
-                <h4 className="font-bold">Your Spending Moods:</h4>
+                <h4 className="font-bold mb-2">Your Spending Moods</h4>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {result.emotionalStateTags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                 </div>
