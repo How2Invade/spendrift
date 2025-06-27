@@ -15,43 +15,39 @@ export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="space-y-2">
-      <div className="text-xs font-mono text-muted-foreground mb-2">THEME_MODE</div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="retro-button w-full justify-between text-xs font-mono"
-          >
-            <div className="flex items-center gap-2">
-              <Sun className="h-3 w-3 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-3 w-3 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span>{theme === 'dark' ? 'NEON' : 'LIGHT'}</span>
-            </div>
-            <span className="text-xs opacity-60">▼</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
-          className="retro-card border-primary/30 font-mono text-xs"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="w-full justify-between text-xs font-mono h-8"
         >
-          <DropdownMenuItem 
-            onClick={() => setTheme('light')}
-            className="hover:bg-primary/10 hover:text-primary"
-          >
-            <Sun className="h-3 w-3 mr-2" />
-            PARENT_APPROVED
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setTheme('dark')}
-            className="hover:bg-primary/10 hover:text-primary"
-          >
-            <Moon className="h-3 w-3 mr-2" />
-            NEON_VIBE
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          <div className="flex items-center gap-2">
+            <Sun className="h-3 w-3 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-3 w-3 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align="end" 
+        className="border border-border font-mono text-xs"
+      >
+        <DropdownMenuItem 
+          onClick={() => setTheme('light')}
+          className="hover:bg-muted"
+        >
+          <Sun className="h-3 w-3 mr-2" />
+          Light Mode
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => setTheme('dark')}
+          className="hover:bg-muted"
+        >
+          <Moon className="h-3 w-3 mr-2" />
+          Dark Mode
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

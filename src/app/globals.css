@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    /* Dark retro theme - primary */
-    --background: 220 13% 8%; /* Deep dark blue-black */
-    --foreground: 120 100% 85%; /* Bright neon green text */
-    --card: 220 14% 10%; /* Slightly lighter dark for cards */
-    --card-foreground: 120 100% 90%;
-    --popover: 220 15% 12%;
-    --popover-foreground: 120 100% 90%;
-    --primary: 120 100% 50%; /* Pure neon green #00FF00 */
-    --primary-foreground: 220 13% 8%;
-    --secondary: 280 100% 70%; /* Neon purple */
-    --secondary-foreground: 220 13% 8%;
-    --muted: 220 13% 15%;
-    --muted-foreground: 120 30% 70%;
-    --accent: 180 100% 50%; /* Neon cyan */
-    --accent-foreground: 220 13% 8%;
-    --destructive: 0 100% 60%; /* Neon red */
-    --destructive-foreground: 220 13% 8%;
-    --border: 120 100% 25%; /* Dim green border */
-    --input: 220 14% 12%;
-    --ring: 120 100% 50%;
-    --radius: 0.75rem;
+    /* Dark retro theme - balanced */
+    --background: 220 15% 6%; /* Very dark navy */
+    --foreground: 210 20% 85%; /* Soft light gray */
+    --card: 220 15% 9%; /* Dark card background */
+    --card-foreground: 210 15% 90%;
+    --popover: 220 15% 10%;
+    --popover-foreground: 210 15% 90%;
+    --primary: 120 60% 45%; /* Toned down green */
+    --primary-foreground: 220 15% 6%;
+    --secondary: 280 50% 60%; /* Muted purple */
+    --secondary-foreground: 220 15% 6%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 210 10% 65%;
+    --accent: 180 60% 45%; /* Toned down cyan */
+    --accent-foreground: 220 15% 6%;
+    --destructive: 0 70% 50%; /* Muted red */
+    --destructive-foreground: 220 15% 6%;
+    --border: 220 20% 20%; /* Subtle borders */
+    --input: 220 15% 10%;
+    --ring: 120 60% 45%;
+    --radius: 0.5rem;
     
-    /* Chart colors - all neon */
-    --chart-1: 120 100% 50%; /* Neon green */
-    --chart-2: 280 100% 70%; /* Neon purple */
-    --chart-3: 180 100% 50%; /* Neon cyan */
-    --chart-4: 60 100% 50%;  /* Neon yellow */
-    --chart-5: 320 100% 70%; /* Neon pink */
+    /* Chart colors - balanced */
+    --chart-1: 120 60% 45%; /* Balanced green */
+    --chart-2: 280 50% 60%; /* Muted purple */
+    --chart-3: 180 60% 45%; /* Balanced cyan */
+    --chart-4: 60 70% 50%;  /* Golden yellow */
+    --chart-5: 320 50% 60%; /* Muted pink */
   }
 
   .light {
@@ -58,32 +58,34 @@
   }
 }
 
-/* Custom retro animations */
+/* Subtle retro animations */
 @keyframes glow {
-  0%, 100% { text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor; }
-  50% { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor; }
+  0%, 100% { text-shadow: 0 0 2px currentColor, 0 0 4px currentColor; }
+  50% { text-shadow: 0 0 4px currentColor, 0 0 8px currentColor; }
 }
 
 @keyframes neon-flicker {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
+  50% { opacity: 0.9; }
 }
 
 @keyframes retro-fade-in {
   from { 
     opacity: 0; 
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(10px);
   }
   to { 
     opacity: 1; 
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes scan-line {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.3; }
+  100% { transform: translateY(100vh); opacity: 0; }
 }
+
 
 @keyframes matrix-rain {
   0% { transform: translateY(-100%); }

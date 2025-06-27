@@ -27,23 +27,23 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="cyber-sidebar h-full flex flex-col">
-      <SidebarHeader className="border-b border-primary/20 p-4">
+    <div className="h-full flex flex-col bg-card border-r border-border">
+      <SidebarHeader className="border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded border border-primary bg-primary/10 flex items-center justify-center">
+          <div className="w-8 h-8 rounded border border-primary/30 bg-primary/5 flex items-center justify-center">
             <SpenDriftLogo className="text-primary w-6 h-6" />
           </div>
           <div className="flex flex-col">
-            <span className="font-retro text-primary text-sm tracking-wider">SPENDRIFT</span>
+            <span className="font-retro text-primary text-sm font-medium">SPENDRIFT</span>
             <span className="font-mono text-xs text-muted-foreground">v2.0.25</span>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="flex-1 p-2">
+      <SidebarContent className="flex-1 p-3">
         <div className="mb-4">
-          <div className="terminal-text text-xs mb-2">
-            NAVIGATION_MENU
+          <div className="text-xs font-mono text-muted-foreground mb-3 px-2">
+            NAVIGATION
           </div>
         </div>
         
@@ -53,28 +53,23 @@ export function AppSidebar() {
               <SidebarMenuButton
                 isActive={pathname === link.href}
                 className={`
-                  group relative w-full justify-start gap-3 p-3 rounded-lg
-                  font-mono text-sm transition-all duration-300
+                  group relative w-full justify-start gap-3 p-3 rounded-md
+                  font-mono text-sm transition-all duration-200
                   ${pathname === link.href 
-                    ? 'bg-primary/20 text-primary border border-primary/30 neon-border' 
-                    : 'text-muted-foreground hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20'
+                    ? 'bg-primary/10 text-primary border border-primary/20' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }
                 `}
                 asChild
               >
                 <Link href={link.href} className="flex items-center w-full">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="relative">
-                      <link.icon className="h-4 w-4" />
-                      {pathname === link.href && (
-                        <div className="absolute -inset-1 bg-primary/20 rounded-full animate-pulse" />
-                      )}
-                    </div>
-                    <span className="truncate font-medium tracking-wide">{link.label}</span>
+                    <link.icon className="h-4 w-4" />
+                    <span className="truncate font-medium">{link.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{link.emoji}</span>
-                    <span className="font-mono text-xs text-muted-foreground/60">{link.code}</span>
+                    <span className="text-base">{link.emoji}</span>
+                    <span className="font-mono text-xs opacity-50">{link.code}</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
@@ -83,16 +78,15 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       
-      <div className="border-t border-primary/20 p-4">
-        <div className="terminal-text text-xs mb-3">
-          SYSTEM_CONTROLS
+      <div className="border-t border-border p-4">
+        <div className="text-xs font-mono text-muted-foreground mb-3">
+          SETTINGS
         </div>
         <ThemeToggle />
         
-        {/* System status indicator */}
-        <div className="mt-4 flex items-center gap-2 text-xs font-mono">
+        <div className="mt-4 flex items-center gap-2 text-xs font-mono text-muted-foreground">
           <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-          <span className="text-muted-foreground">ONLINE</span>
+          <span>ONLINE</span>
         </div>
       </div>
     </div>
