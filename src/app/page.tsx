@@ -52,7 +52,7 @@ export default function LandingPage() {
           </p>
         </div>
         
-        <div className="retro-fade-in" style={{animationDelay: '0.6s'}}>
+        <div className="flex items-center gap-4 retro-fade-in" style={{animationDelay: '0.6s'}}>
           <Button 
             asChild 
             size="lg" 
@@ -61,6 +61,16 @@ export default function LandingPage() {
             <Link href="/dashboard">
               Start Tracking
               <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
+           <Button 
+            asChild 
+            size="lg" 
+            variant="outline"
+            className="text-lg px-8 py-4 font-retro"
+          >
+            <Link href="/login">
+              Log In
             </Link>
           </Button>
         </div>
