@@ -4,14 +4,24 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
-import { ArrowLeft, Chrome, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Chrome, Loader2, Sparkles, Mail, Lock, User } from 'lucide-react';
 
 export default function AuthPage() {
-  const { signInWithGoogle, loading, user } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, loading, user } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    displayName: '',
+    confirmPassword: ''
+  });
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
   // If user is already authenticated, redirect to dashboard
   React.useEffect(() => {
@@ -25,10 +35,67 @@ export default function AuthPage() {
     try {
       await signInWithGoogle();
       // Note: signInWithGoogle will redirect to Google's OAuth page
-      // User will be redirected back to /dashboard after successful auth
     } catch (error) {
-      // Error is handled in the auth context
       setIsSigningIn(false);
+    }
+  };
+
+  const validateForm = (isSignUp = false) => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Email is invalid';
+    }
+    
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (isSignUp) {
+      if (!formData.displayName) {
+        errors.displayName = 'Display name is required';
+      }
+      if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    
+    setIsSigningIn(true);
+    try {
+      await signInWithEmail(formData.email, formData.password);
+    } catch (error) {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleEmailSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm(true)) return;
+    
+    setIsSigningIn(true);
+    try {
+      await signUpWithEmail(formData.email, formData.password, formData.displayName);
+    } catch (error) {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -110,14 +177,173 @@ export default function AuthPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
+              <Tabs defaultValue="signin" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="signin" className="space-y-4">
+                  <form onSubmit={handleEmailSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email" className="font-mono text-sm">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          className="pl-10 font-mono"
+                          disabled={isSigningIn}
+                        />
+                      </div>
+                      {formErrors.email && <p className="text-sm text-destructive font-mono">{formErrors.email}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password" className="font-mono text-sm">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange('password', e.target.value)}
+                          className="pl-10 font-mono"
+                          disabled={isSigningIn}
+                        />
+                      </div>
+                      {formErrors.password && <p className="text-sm text-destructive font-mono">{formErrors.password}</p>}
+                    </div>
+                    
+                    <Button
+                      type="submit"
+                      disabled={isSigningIn}
+                      size="lg"
+                      className="w-full font-mono text-base"
+                    >
+                      {isSigningIn ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        'Sign In'
+                      )}
+                    </Button>
+                  </form>
+                </TabsContent>
+                
+                <TabsContent value="signup" className="space-y-4">
+                  <form onSubmit={handleEmailSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name" className="font-mono text-sm">Display Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Your Name"
+                          value={formData.displayName}
+                          onChange={(e) => handleInputChange('displayName', e.target.value)}
+                          className="pl-10 font-mono"
+                          disabled={isSigningIn}
+                        />
+                      </div>
+                      {formErrors.displayName && <p className="text-sm text-destructive font-mono">{formErrors.displayName}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email" className="font-mono text-sm">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          className="pl-10 font-mono"
+                          disabled={isSigningIn}
+                        />
+                      </div>
+                      {formErrors.email && <p className="text-sm text-destructive font-mono">{formErrors.email}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password" className="font-mono text-sm">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange('password', e.target.value)}
+                          className="pl-10 font-mono"
+                          disabled={isSigningIn}
+                        />
+                      </div>
+                      {formErrors.password && <p className="text-sm text-destructive font-mono">{formErrors.password}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-confirm" className="font-mono text-sm">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-confirm"
+                          type="password"
+                          placeholder="••••••••"
+                          value={formData.confirmPassword}
+                          onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                          className="pl-10 font-mono"
+                          disabled={isSigningIn}
+                        />
+                      </div>
+                      {formErrors.confirmPassword && <p className="text-sm text-destructive font-mono">{formErrors.confirmPassword}</p>}
+                    </div>
+                    
+                    <Button
+                      type="submit"
+                      disabled={isSigningIn}
+                      size="lg"
+                      className="w-full font-mono text-base"
+                    >
+                      {isSigningIn ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Creating account...
+                        </>
+                      ) : (
+                        'Create Account'
+                      )}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+                className="space-y-4"
               >
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground font-mono">or continue with</span>
+                  </div>
+                </div>
+                
                 <Button
                   onClick={handleGoogleSignIn}
-                  disabled={isSigningIn || loading}
+                  disabled={isSigningIn}
                   size="lg"
                   className="w-full font-mono text-base relative overflow-hidden group"
                   variant="outline"
@@ -138,15 +364,6 @@ export default function AuthPage() {
                     {isSigningIn ? 'Signing you in...' : 'Continue with Google'}
                   </div>
                 </Button>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-                className="space-y-4"
-              >
-                <Separator />
                 
                 <div className="text-center space-y-2">
                   <p className="text-xs text-muted-foreground font-mono">

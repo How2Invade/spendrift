@@ -12,6 +12,8 @@ interface AuthContextProps {
   userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -92,6 +94,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      toast({ 
+        title: "Welcome back!", 
+        description: "You've successfully signed in." 
+      });
+      
+      router.push('/dashboard');
+    } catch (error: any) {
+      handleAuthError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string, displayName: string) => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: displayName,
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({ 
+          title: "Check your email!", 
+          description: "We've sent you a confirmation link to complete your registration." 
+        });
+      } else {
+        toast({ 
+          title: "Welcome to SpenDrift!", 
+          description: "Your account has been created successfully." 
+        });
+        router.push('/dashboard');
+      }
+    } catch (error: any) {
+      handleAuthError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
@@ -125,11 +190,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userProfile: UserProfile = {
         id: user.id,
         email: user.email || '',
-        display_name: user.user_metadata?.full_name || user.email || '',
+        display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
         photo_url: user.user_metadata?.avatar_url || null,
         points: 100, // Starting points
         created_at: new Date().toISOString(),
-        provider: 'google'
+        provider: user.app_metadata?.provider || 'email'
       };
 
       const { error } = await supabase
@@ -182,7 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, userProfile, loading]);
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );

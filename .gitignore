@@ -46,3 +46,6 @@ firestore-debug.log
 
 #docs
 .docs
+
+#env local
+.env.local
