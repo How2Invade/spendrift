@@ -92,7 +92,20 @@ export interface Database {
 
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = (): boolean => {
-  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (typeof window !== 'undefined') {
+    // Client-side: log for debugging
+    console.log('Supabase Config Check:', {
+      hasUrl: !!url,
+      hasKey: !!key,
+      urlPrefix: url ? url.substring(0, 20) + '...' : 'missing',
+      keyPrefix: key ? key.substring(0, 20) + '...' : 'missing'
+    });
+  }
+  
+  return !!(url && key && url.includes('supabase.co'));
 };
 
 // Helper function to get configuration errors

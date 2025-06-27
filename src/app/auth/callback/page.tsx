@@ -2,104 +2,191 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase, isSupabaseConfigured, getSupabaseConfigErrors } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState('Processing...');
+  const [status, setStatus] = useState('Initializing...');
+  const [isComplete, setIsComplete] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleAuth = async () => {
       try {
-        setStatus('Checking environment...');
-        
-        // Verify Supabase client is properly configured
-        if (!isSupabaseConfigured()) {
-          const errors = getSupabaseConfigErrors();
-          console.error('Supabase configuration errors:', errors);
-          setStatus(`Configuration error: ${errors.join(', ')}`);
-          router.push('/auth?error=config_error');
-          return;
-        }
-
+        console.log('🚀 Auth callback started');
         setStatus('Processing authentication...');
         
-        // Check for code in URL params (email verification)
+        // Get URL parameters
         const code = searchParams.get('code');
         const error = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
         
+        console.log('📝 URL params:', { 
+          hasCode: !!code, 
+          error, 
+          fullUrl: window.location.href 
+        });
+        
+        // Handle errors from URL
         if (error) {
-          console.error('Auth error from URL:', error, errorDescription);
-          setStatus('Authentication error');
-          router.push(`/auth?error=${error}`);
+          console.error('❌ URL error:', error);
+          setStatus(`Authentication failed: ${error}`);
+          setHasError(true);
           return;
         }
         
-        if (code) {
-          setStatus('Verifying email...');
+        // No code means check existing session
+        if (!code) {
+          console.log('🔍 No code, checking session...');
+          setStatus('Checking existing session...');
           
-          // Exchange the code for a session
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
           
-          if (exchangeError) {
-            console.error('Code exchange error:', exchangeError);
-            setStatus('Verification failed');
-            router.push('/auth?error=verification_failed');
+          if (sessionError) {
+            console.error('❌ Session error:', sessionError);
+            setStatus('Session check failed');
+            setHasError(true);
             return;
           }
-
-          if (data?.session) {
-            setStatus('Email verified! Redirecting...');
-            // User is now verified and authenticated
-            router.push('/dashboard?verified=true');
+          
+          if (sessionData?.session) {
+            console.log('✅ Found existing session');
+            setStatus('Redirecting to dashboard...');
+            setIsComplete(true);
+            router.push('/dashboard');
             return;
           }
-        }
-
-        setStatus('Checking session...');
-        
-        // Fallback: Check for existing session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          setStatus('Session error');
-          router.push('/auth?error=session_error');
-          return;
-        }
-
-        if (sessionData?.session) {
-          setStatus('Authenticated! Redirecting...');
-          // User has a valid session
-          router.push('/dashboard');
-        } else {
+          
+          console.log('ℹ️ No session found, redirecting to auth');
           setStatus('No session found');
-          // No session, redirect to auth page
           router.push('/auth');
+          return;
         }
+        
+        // Exchange code for session
+        console.log('🔄 Exchanging code for session...');
+        setStatus('Verifying your email...');
+        
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (exchangeError) {
+          console.error('❌ Code exchange failed:', exchangeError);
+          setStatus(`Verification failed: ${exchangeError.message}`);
+          setHasError(true);
+          return;
+        }
+        
+        if (data?.session) {
+          console.log('✅ Email verified successfully!');
+          setStatus('Email verified! Welcome to SpenDrift!');
+          setIsComplete(true);
+          
+          // Brief delay then redirect
+          timeoutId = setTimeout(() => {
+            router.push('/dashboard?verified=true');
+          }, 2000);
+        } else {
+          console.error('⚠️ No session after code exchange');
+          setStatus('Verification completed but no session created');
+          setHasError(true);
+        }
+        
       } catch (error) {
-        console.error('Error in auth callback:', error);
-        setStatus('Unexpected error');
-        router.push('/auth?error=unexpected_error');
+        console.error('💥 Unexpected error:', error);
+        setStatus('An unexpected error occurred');
+        setHasError(true);
       }
     };
-
-    handleAuthCallback();
+    
+    // Add small delay to ensure URL params are loaded
+    const initTimeout = setTimeout(handleAuth, 100);
+    
+    return () => {
+      clearTimeout(initTimeout);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [router, searchParams]);
 
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
+  const handleGoHome = () => {
+    router.push('/auth');
+  };
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-        <p className="font-mono text-sm text-muted-foreground">
-          {status}
-        </p>
-        <p className="font-mono text-xs text-muted-foreground opacity-60">
-          Please wait while we complete your authentication...
-        </p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md text-center space-y-6">
+        <div className="space-y-4">
+          {/* Icon */}
+          {!hasError && !isComplete && (
+            <Loader2 className="h-16 w-16 animate-spin mx-auto text-primary" />
+          )}
+          {hasError && (
+            <AlertTriangle className="h-16 w-16 mx-auto text-destructive" />
+          )}
+          {isComplete && (
+            <CheckCircle className="h-16 w-16 mx-auto text-green-500" />
+          )}
+          
+          {/* Status */}
+          <div className="space-y-2">
+            <h1 className="text-xl font-retro text-foreground">
+              {hasError ? 'Authentication Failed' : 
+               isComplete ? 'Success!' : 
+               'Completing Sign Up'}
+            </h1>
+            
+            <p className="font-mono text-sm text-muted-foreground">
+              {status}
+            </p>
+          </div>
+        </div>
+        
+        {/* Actions */}
+        {hasError && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Don't worry, this happens sometimes. Let's try again!
+            </p>
+            
+            <div className="flex gap-2 justify-center">
+              <Button onClick={handleRetry} variant="outline" size="sm">
+                Try Again
+              </Button>
+              <Button onClick={handleGoHome} size="sm">
+                Back to Sign In
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {isComplete && (
+          <p className="text-sm text-green-600 font-mono">
+            Redirecting to your dashboard...
+          </p>
+        )}
+        
+        {!hasError && !isComplete && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              This usually takes just a few seconds
+            </p>
+            <Button 
+              onClick={handleGoHome} 
+              variant="ghost" 
+              size="sm"
+              className="text-xs"
+            >
+              Taking too long? Click here
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

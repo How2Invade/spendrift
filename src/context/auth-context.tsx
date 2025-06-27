@@ -27,6 +27,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    // Set a timeout to prevent infinite loading
+    timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('Auth loading timeout - forcing loading state to false');
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -34,6 +44,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loadUserProfile(session.user.id);
       }
       setLoading(false);
+      clearTimeout(timeoutId);
+    }).catch((error) => {
+      console.error('Auth session error:', error);
+      setLoading(false);
+      clearTimeout(timeoutId);
     });
 
     // Listen for auth changes
@@ -61,7 +76,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   const loadUserProfile = async (userId: string) => {
