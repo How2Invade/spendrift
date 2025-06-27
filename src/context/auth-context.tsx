@@ -40,10 +40,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
+      
       setUser(session?.user ?? null);
       
       if (session?.user) {
         await loadUserProfile(session.user.id);
+        
+        // If this is a new user or email confirmation, show welcome message
+        if (event === 'SIGNED_IN' && session.user.email_confirmed_at) {
+          toast({ 
+            title: "Welcome back!", 
+            description: "You've successfully signed in." 
+          });
+        }
       } else {
         setUserProfile(null);
       }

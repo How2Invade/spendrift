@@ -1,20 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.');
+  const missingVars = [];
+  if (!supabaseUrl) missingVars.push('NEXT_PUBLIC_SUPABASE_URL');
+  if (!supabaseAnonKey) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  
+  console.error(`Missing Supabase environment variables: ${missingVars.join(', ')}`);
+  console.error('Please add these variables to your .env.local file.');
+  
+  // For development, show a more descriptive error
+  if (typeof window !== 'undefined') {
+    console.error('Check your .env.local file in the root directory of your project.');
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+export const supabase = createClient(
+  supabaseUrl || '', 
+  supabaseAnonKey || '', 
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce'
+    }
   }
-});
+);
 
 // Database types (you can generate these from your Supabase dashboard)
 export interface UserProfile {
@@ -74,3 +89,23 @@ export interface Database {
     };
   };
 }
+
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = (): boolean => {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+};
+
+// Helper function to get configuration errors
+export const getSupabaseConfigErrors = (): string[] => {
+  const errors: string[] = [];
+  
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    errors.push('NEXT_PUBLIC_SUPABASE_URL is missing');
+  }
+  
+  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    errors.push('NEXT_PUBLIC_SUPABASE_ANON_KEY is missing');
+  }
+  
+  return errors;
+};

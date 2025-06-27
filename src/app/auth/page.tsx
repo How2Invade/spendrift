@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
@@ -9,8 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
-import { ArrowLeft, Chrome, Loader2, Sparkles, Mail, Lock, User } from 'lucide-react';
+import { ArrowLeft, Chrome, Loader2, Sparkles, Mail, Lock, User, AlertTriangle } from 'lucide-react';
 
 export default function AuthPage() {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail, loading, user } = useAuth();
@@ -22,9 +24,28 @@ export default function AuthPage() {
     confirmPassword: ''
   });
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  // Check for error in URL parameters
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      const errorMessages: {[key: string]: string} = {
+        'verification_failed': 'Email verification failed. Please try again.',
+        'session_error': 'Session error occurred. Please try signing in again.',
+        'config_error': 'Configuration error. Please contact support.',
+        'callback_error': 'Authentication callback error. Please try again.',
+        'unexpected_error': 'An unexpected error occurred. Please try again.',
+        'access_denied': 'Access was denied. Please try again.',
+        'server_error': 'Server error occurred. Please try again later.'
+      };
+      setUrlError(errorMessages[error] || 'An error occurred during authentication.');
+    }
+  }, [searchParams]);
 
   // If user is already authenticated, redirect to dashboard
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && !loading) {
       window.location.href = '/dashboard';
     }
@@ -177,6 +198,16 @@ export default function AuthPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
+              {/* Error Alert */}
+              {urlError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="font-mono text-sm">
+                    {urlError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <Tabs defaultValue="signin" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>

@@ -64,15 +64,22 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-## 5. Configure Site URL
+## 5. Configure Site URL and Redirects
 
 1. In Supabase dashboard, go to **Authentication** > **URL Configuration**
 2. Set **Site URL** to:
-   - Production: `https://yourdomain.com`
+   - Production: `https://your-vercel-app.vercel.app` (your actual Vercel URL)
    - Development: `http://localhost:9002`
 3. Add **Redirect URLs**:
-   - `https://yourdomain.com/dashboard`
+   - `https://your-vercel-app.vercel.app/auth/callback`
+   - `https://your-vercel-app.vercel.app/dashboard`
+   - `http://localhost:9002/auth/callback`
    - `http://localhost:9002/dashboard`
+
+### Important for Email Confirmation:
+- The **Site URL** determines where users are redirected after email confirmation
+- Make sure it points to your production domain for deployed apps
+- For Vercel deployments, use the `.vercel.app` domain or your custom domain
 
 ## 6. Test the Integration
 
@@ -105,6 +112,19 @@ The setup creates a `user_profiles` table with:
 - Secure authentication flow
 
 ## Troubleshooting
+
+**Issue**: "No API key found in request" after email verification on Vercel
+- **Root Cause**: Email confirmation redirect URL not properly configured for production
+- **Solution**: 
+  1. In Supabase dashboard: **Authentication** → **URL Configuration**
+  2. Set **Site URL** to your actual Vercel deployment URL: `https://your-app.vercel.app`
+  3. Add **Redirect URLs**:
+     - `https://your-app.vercel.app/auth/callback`
+     - `https://your-app.vercel.app/dashboard`
+  4. Make sure environment variables are set in Vercel:
+     - Go to Vercel dashboard → Your project → Settings → Environment Variables
+     - Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  5. Redeploy your Vercel app after updating environment variables
 
 **Issue**: "Check your email!" message after signup
 - **Expected Behavior**: This is normal - users need to confirm their email address
