@@ -4,59 +4,285 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 120 61% 50%; /* #32CD32 retro green */
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 120 73% 75%; /* #90EE90 light green */
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 120 61% 50%;
+    /* Dark retro theme - balanced */
+    --background: 220 15% 6%; /* Very dark navy */
+    --foreground: 210 20% 85%; /* Soft light gray */
+    --card: 220 15% 9%; /* Dark card background */
+    --card-foreground: 210 15% 90%;
+    --popover: 220 15% 10%;
+    --popover-foreground: 210 15% 90%;
+    --primary: 120 60% 45%; /* Toned down green */
+    --primary-foreground: 220 15% 6%;
+    --secondary: 280 50% 60%; /* Muted purple */
+    --secondary-foreground: 220 15% 6%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 210 10% 65%;
+    --accent: 180 60% 45%; /* Toned down cyan */
+    --accent-foreground: 220 15% 6%;
+    --destructive: 0 70% 50%; /* Muted red */
+    --destructive-foreground: 220 15% 6%;
+    --border: 220 20% 20%; /* Subtle borders */
+    --input: 220 15% 10%;
+    --ring: 120 60% 45%;
     --radius: 0.5rem;
-    --chart-1: 120 70% 50%;
-    --chart-2: 100 70% 50%;
-    --chart-3: 140 70% 50%;
-    --chart-4: 80 70% 50%;
-    --chart-5: 160 70% 50%;
+    
+    /* Chart colors - balanced */
+    --chart-1: 120 60% 45%; /* Balanced green */
+    --chart-2: 280 50% 60%; /* Muted purple */
+    --chart-3: 180 60% 45%; /* Balanced cyan */
+    --chart-4: 60 70% 50%;  /* Golden yellow */
+    --chart-5: 320 50% 60%; /* Muted pink */
   }
 
   .light {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light retro theme - cyberpunk vibes */
+    --background: 0 0% 98%;
+    --foreground: 220 13% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 13% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --popover-foreground: 220 13% 8%;
+    --primary: 120 100% 25%; /* Dark green for light mode */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 280 50% 50%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 180 100% 35%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 120 100% 25%;
   }
+}
+
+/* Subtle retro animations */
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 2px currentColor, 0 0 4px currentColor; }
+  50% { text-shadow: 0 0 4px currentColor, 0 0 8px currentColor; }
+}
+
+@keyframes neon-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes retro-fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.3; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+
+@keyframes matrix-rain {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes holographic-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes matrix-flicker {
+  0% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0.98; }
+  100% { opacity: 1; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+/* Utility classes for retro effects */
+.glow-text {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.neon-flicker {
+  animation: neon-flicker 0.1s infinite alternate;
+}
+
+.retro-fade-in {
+  animation: retro-fade-in 0.6s ease-out forwards;
+}
+
+.scan-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
+  animation: scan-line 3s linear infinite;
+}
+
+/* Retro button styles */
+.retro-button {
+  position: relative;
+  background: transparent;
+  border: 2px solid hsl(var(--primary));
+  color: hsl(var(--primary));
+  font-family: 'Orbitron', monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.retro-button:hover {
+  background: hsl(var(--primary));
+  color: hsl(var(--background));
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+  transform: translateY(-2px);
+}
+
+.retro-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.retro-button:hover::before {
+  left: 100%;
+}
+
+/* Retro card styles */
+.retro-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.retro-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.5), transparent);
+  animation: scan-line 4s linear infinite;
+}
+
+/* Retro grid background */
+.retro-grid {
+  background-image: 
+    linear-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Terminal-style text */
+.terminal-text {
+  font-family: 'JetBrains Mono', monospace;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--primary));
+  padding: 1rem;
+  border-radius: 4px;
+  position: relative;
+}
+
+.terminal-text::before {
+  content: '> ';
+  color: hsl(var(--primary));
+  font-weight: bold;
+}
+
+/* Neon borders */
+.neon-border {
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 
+    0 0 5px hsl(var(--primary) / 0.3),
+    inset 0 0 5px hsl(var(--primary) / 0.1);
+}
+
+/* Cyberpunk sidebar */
+.cyber-sidebar {
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
+  border-right: 2px solid hsl(var(--primary) / 0.3);
+  position: relative;
+}
+
+.cyber-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, hsl(var(--primary)), transparent);
+  animation: neon-flicker 2s infinite alternate;
+}
+
+/* Holographic effects */
+.holographic {
+  background: linear-gradient(45deg, 
+    hsl(var(--primary) / 0.1), 
+    hsl(var(--secondary) / 0.1), 
+    hsl(var(--accent) / 0.1)
+  );
+  background-size: 300% 300%;
+  animation: holographic-shift 3s ease infinite;
+}
+
+/* Matrix text effect */
+.matrix-text {
+  font-family: 'JetBrains Mono', monospace;
+  color: hsl(var(--primary));
+  text-shadow: 0 0 10px currentColor;
+  animation: matrix-flicker 0.15s infinite linear;
+}
+
+/* Retro input styles */
+.retro-input {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 4px;
+  padding: 0.75rem;
+  color: hsl(var(--foreground));
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s ease;
+}
+
+.retro-input:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+  outline: none;
+}
+
+/* Glitch effect */
+.glitch {
+  animation: glitch 0.3s ease-in-out infinite;
 }
 
 @layer base {
@@ -65,71 +291,182 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
-  .glassmorphism {
+  .glass-card {
     @apply bg-card/30 backdrop-blur-lg border border-border/30 rounded-xl shadow-lg;
   }
 }
 
-/* Preloader styles */
-.preloader {
-  @apply fixed inset-0 z-[100] flex items-center justify-center bg-background;
-}
-.preloader-svg {
-  width: 300px;
-  height: 100px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 48px;
-}
-.preloader-svg text {
-  stroke-dasharray: 500;
-  stroke-dashoffset: 500;
-  animation: stroke-anim 2s ease-in-out forwards, fill-anim 1s ease-in-out 1.5s forwards;
-  stroke: hsl(var(--primary));
-  stroke-width: 2;
-  fill: transparent;
-}
-@keyframes stroke-anim {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes fill-anim {
-  from {
-    fill: transparent;
-  }
-  to {
-    fill: hsl(var(--primary));
-  }
-}
-
-/* Landing Page Animations */
 @layer utilities {
+  .preloader-overlay {
+    @apply fixed inset-0 z-[100] flex items-center justify-center bg-background;
+  }
+
+  .animate-fade-in-up {
+    @apply animate-in slide-in-from-bottom-4 fade-in duration-700;
+  }
+
   .animation-delay-300 {
     animation-delay: 300ms;
   }
+
   .animation-delay-600 {
     animation-delay: 600ms;
   }
 }
 
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.retro-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-  opacity: 0;
+.retro-button:hover::before {
+  left: 100%;
+}
+
+/* Retro card styles */
+.retro-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.retro-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.5), transparent);
+  animation: scan-line 4s linear infinite;
+}
+
+/* Retro grid background */
+.retro-grid {
+  background-image: 
+    linear-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Terminal-style text */
+.terminal-text {
+  font-family: 'JetBrains Mono', monospace;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--primary));
+  padding: 1rem;
+  border-radius: 4px;
+  position: relative;
+}
+
+.terminal-text::before {
+  content: '> ';
+  color: hsl(var(--primary));
+  font-weight: bold;
+}
+
+/* Neon borders */
+.neon-border {
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 
+    0 0 5px hsl(var(--primary) / 0.3),
+    inset 0 0 5px hsl(var(--primary) / 0.1);
+}
+
+/* Cyberpunk sidebar */
+.cyber-sidebar {
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
+  border-right: 2px solid hsl(var(--primary) / 0.3);
+  position: relative;
+}
+
+.cyber-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, hsl(var(--primary)), transparent);
+  animation: neon-flicker 2s infinite alternate;
+}
+
+/* Holographic effects */
+.holographic {
+  background: linear-gradient(45deg, 
+    hsl(var(--primary) / 0.1), 
+    hsl(var(--secondary) / 0.1), 
+    hsl(var(--accent) / 0.1)
+  );
+  background-size: 300% 300%;
+  animation: holographic-shift 3s ease infinite;
+}
+
+@keyframes holographic-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Matrix text effect */
+.matrix-text {
+  font-family: 'JetBrains Mono', monospace;
+  color: hsl(var(--primary));
+  text-shadow: 0 0 10px currentColor;
+  animation: matrix-flicker 0.15s infinite linear;
+}
+
+@keyframes matrix-flicker {
+  0% { opacity: 1; }
+  98% { opacity: 1; }
+  99% { opacity: 0.98; }
+  100% { opacity: 1; }
+}
+
+/* Retro input styles */
+.retro-input {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--primary) / 0.3);
+  border-radius: 4px;
+  padding: 0.75rem;
+  color: hsl(var(--foreground));
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s ease;
+}
+
+.retro-input:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+  outline: none;
+}
+
+/* Glitch effect */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.glitch {
+  animation: glitch 0.3s ease-in-out infinite;
+}
+
+* {
+  border-color: hsl(var(--border));
 }

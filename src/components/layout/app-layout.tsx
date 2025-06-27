@@ -19,10 +19,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <AppSidebar />
-      </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
+      <div className="flex h-screen bg-background">
+        <Sidebar className="border-r">
+          <AppSidebar />
+        </Sidebar>
+        <SidebarInset className="flex-1 overflow-auto">
+          <div className="min-h-full">
+            {children}
+          </div>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

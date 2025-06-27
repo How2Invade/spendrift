@@ -1,7 +1,6 @@
 'use client';
 
-import { DollarSign, CreditCard, PiggyBank, Smile, Frown } from 'lucide-react';
-import SummaryCard from '@/components/dashboard/summary-card';
+import { DollarSign, CreditCard, PiggyBank, Smile } from 'lucide-react';
 import RecentTransactions from '@/components/dashboard/recent-transactions';
 import SpendingAdvice from '@/components/dashboard/spending-advice';
 import ParentAlert from '@/components/dashboard/parent-alert';
@@ -37,21 +36,64 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-8">
-      <header>
-        <h1 className="text-3xl font-bold font-headline">Dashboard ✨</h1>
-        <p className="text-muted-foreground">Welcome back! Here's your financial tea.</p>
+    <div className="flex flex-col gap-8 p-4 md:p-8 min-h-screen bg-background">
+      {/* Header */}
+      <header className="relative">
+        <div className="mb-2">
+          <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+            Financial Dashboard
+          </span>
+        </div>
+        <h1 className="text-4xl font-bold font-retro text-primary mb-2">
+          DASHBOARD ⚡
+        </h1>
+        <p className="text-muted-foreground">
+          Welcome back! Here&apos;s your financial status report.
+        </p>
       </header>
 
+      {/* Summary cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {summaryData.map((data) => (
-          <SummaryCard key={data.title} {...data} />
+        {summaryData.map((data, index) => (
+          <div
+            key={data.title}
+            className="bg-card border border-border rounded-lg p-6 hover:border-primary/30 transition-colors duration-200"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 rounded-md bg-primary/10 border border-primary/20">
+                <data.icon className="h-5 w-5 text-primary" />
+              </div>
+              <span className="font-mono text-xs text-muted-foreground">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="font-mono text-sm text-muted-foreground uppercase tracking-wide">
+                {data.title}
+              </p>
+              <p className="text-2xl font-bold font-retro text-foreground">
+                {data.value}
+              </p>
+              <p className="text-xs text-primary">
+                {data.change}
+              </p>
+            </div>
+          </div>
         ))}
       </div>
 
+      {/* Main content grid */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentTransactions />
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-card border border-border rounded-lg p-6">
+            <div className="mb-4">
+              <h3 className="font-mono text-sm text-muted-foreground uppercase tracking-wider mb-2">
+                Recent Transactions
+              </h3>
+            </div>
+            <RecentTransactions />
+          </div>
         </div>
         <div className="flex flex-col gap-8">
           <FinancialHealthCheck />

@@ -41,17 +41,26 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 flex flex-col gap-8">
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="p-4 md:p-8 flex flex-col gap-8 retro-grid min-h-screen">
+      <header className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline">Your Goals 🏆</h1>
-          <p className="text-muted-foreground">Crush these goals to level up your savings game. You got this!</p>
+          <div className="terminal-text mb-4">
+            <span className="matrix-text">GOAL_TRACKING_SYSTEM</span>
+          </div>
+          <h1 className="text-4xl font-bold font-retro text-primary glow-text mb-2">
+            OBJECTIVES �
+          </h1>
+          <p className="text-muted-foreground font-mono">
+            {'>'} Achievement progress monitoring initiated...
+          </p>
         </div>
+        <div className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+        
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="retro-button font-mono">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add New Goal
+              NEW_OBJECTIVE
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">

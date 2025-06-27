@@ -32,31 +32,35 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background text-foreground">
-      <div className="absolute inset-0 z-0 opacity-5">
-        <Image
-          src="https://placehold.co/1920x1080.png"
-          alt="Abstract money pattern background"
-          data-ai-hint="money pattern"
-          layout="fill"
-          objectFit="cover"
-          priority
-        />
+    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 z-0 opacity-20">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background" />
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-background/50 via-background/80 to-background" />
 
-      <main className="z-20 flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-7xl md:text-8xl font-bold font-headline text-primary tracking-tighter animate-fade-in-up">
-          {text}
-          <span className={showCursor ? 'opacity-100 transition-opacity duration-150' : 'opacity-0 transition-opacity duration-150'}>_</span>
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg text-muted-foreground md:text-xl animate-fade-in-up animation-delay-300">
-          Your Gen-Z finance buddy. Master your money with AI-powered insights, gamified goals, and zero stress.
-        </p>
-        <div className="animate-fade-in-up animation-delay-600">
-          <Button asChild size="lg" className="mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+      <main className="z-20 flex flex-col items-center justify-center text-center p-4 relative">
+        {/* Main title */}
+        <div className="relative mb-8">
+          <h1 className="text-6xl md:text-8xl font-bold font-retro text-primary mb-4 retro-fade-in">
+            {text}
+            <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150 text-accent`}>_</span>
+          </h1>
+        </div>
+        
+        <div className="max-w-2xl mb-8 retro-fade-in" style={{animationDelay: '0.3s'}}>
+          <p className="text-lg md:text-xl text-muted-foreground font-mono">
+            Your Gen-Z finance buddy. Master your money with AI-powered insights, gamified goals, and zero stress.
+          </p>
+        </div>
+        
+        <div className="retro-fade-in" style={{animationDelay: '0.6s'}}>
+          <Button 
+            asChild 
+            size="lg" 
+            className="text-lg px-8 py-4 font-retro bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
             <Link href="/dashboard">
-              Explore The App
+              Enter Dashboard
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
