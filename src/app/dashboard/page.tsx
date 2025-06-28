@@ -1,4 +1,4 @@
-'use client';
+                                                                                                                                                                                                                                                                                                                  'use client';
 
 import { DollarSign, CreditCard, PiggyBank, Smile, HeartPulse, Sparkles, Zap, PlusCircle } from 'lucide-react';
 import RecentTransactions from '@/components/dashboard/recent-transactions';

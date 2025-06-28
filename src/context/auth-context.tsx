@@ -245,14 +245,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
+      console.log("Sign out triggered");
+      toast({ title: "Sign Out Triggered", description: "Processing sign out..." });
       const { error } = await supabase.auth.signOut();
       if (error) {
-        throw error;
+        toast({ 
+          variant: 'destructive', 
+          title: 'Error Signing Out', 
+          description: error.message || 'Please try again.' 
+        });
+        console.error("Supabase signOut error:", error);
+        return;
       }
-      
+      // Force clear Supabase session from localStorage and cookies
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        // Remove all keys that start with 'sb-' (Supabase v2+)
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('sb-')) localStorage.removeItem(key);
+        });
+      } catch (e) {
+        console.warn('Could not clear Supabase session from localStorage:', e);
+      }
       setUser(null);
       setUserProfile(null);
-      router.push('/');
+      router.replace('/'); // Redirect to main landing page
       toast({ 
         title: "Signed Out", 
         description: "You've been successfully signed out." 
