@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Sparkles, Gift, Award, Lock, BadgeCheck, ShoppingBag, Store, PartyPopper } from 'lucide-react';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 const rewards = [
   {
@@ -62,14 +63,18 @@ export default function RewardsPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('my-rewards');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showRedeem, setShowRedeem] = useState(false);
+  const [redeemedReward, setRedeemedReward] = useState(null);
 
-  const handleRedeem = (cost: number) => {
+  const handleRedeem = (reward) => {
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 2000);
-    toast({
-      title: 'Coming Soon! 🚀',
-      description: 'Point redemption is in the works. Your points are safe!',
-    });
+    setRedeemedReward(reward);
+    setShowRedeem(true);
+    // toast({
+    //   title: 'Coming Soon! 🚀',
+    //   description: 'Point redemption is in the works. Your points are safe!',
+    // });
   };
 
   return (
@@ -180,7 +185,7 @@ export default function RewardsPage() {
                 </CardHeader>
                 <CardContent className="flex-1 flex items-end">
                   <Button
-                    onClick={() => handleRedeem(reward.cost)}
+                    onClick={() => handleRedeem(reward)}
                     disabled={points < reward.cost}
                     className="w-full"
                   >
@@ -190,6 +195,31 @@ export default function RewardsPage() {
               </Card>
             ))}
           </div>
+          <Dialog open={showRedeem} onOpenChange={setShowRedeem}>
+            <DialogContent className="glassmorphism max-w-md mx-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">🎉 Reward Redeemed!</DialogTitle>
+                <DialogDescription>
+                  {redeemedReward && (
+                    <>
+                      <div className="mt-2 text-lg font-mono text-primary">{redeemedReward.title}</div>
+                      <div className="mt-1 text-muted-foreground">{redeemedReward.description}</div>
+                    </>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col items-center gap-3 my-4">
+                <div className="text-4xl">{redeemedReward?.emoji}</div>
+                <div className="bg-background/80 border border-primary/30 rounded-lg px-6 py-3 font-mono text-lg text-primary shadow">
+                  Coupon Code: <span className="font-bold">ZEN-FAKE-{Math.floor(1000 + Math.random() * 9000)}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">(This is a mockup. Real rewards coming soon!)</div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => setShowRedeem(false)} className="w-full">Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
         <TabsContent value="real-world">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
