@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sparkles, HeartPulse, Zap, Bot } from "lucide-react";
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/auth-context';
 
 const aiConfigs = [
   {
@@ -44,12 +46,44 @@ const aiConfigs = [
 ];
 
 function ChatUI({ aiKey, prompts, welcome }) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState([
     { role: "ai", text: welcome },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
+
+  // Load chat history from Supabase on mount
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from('ai_chat_history')
+        .select('messages')
+        .eq('user_id', user.id)
+        .eq('ai_type', aiKey)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data && data.messages) {
+        setMessages(data.messages);
+      }
+    })();
+  }, [user, aiKey]);
+
+  // Save chat history to Supabase on change
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      await supabase.from('ai_chat_history').upsert({
+        user_id: user.id,
+        ai_type: aiKey,
+        messages,
+        created_at: new Date().toISOString(),
+      }, { onConflict: ['user_id', 'ai_type'] });
+    })();
+  }, [messages, user, aiKey]);
 
   useEffect(() => {
     if (chatEndRef.current) {

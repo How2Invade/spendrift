@@ -13,13 +13,10 @@ interface DataContextProps {
   addTransaction: (transaction: Omit<LibTransaction, 'id' | 'emotionalState'>) => Promise<void>;
   addGoal: (goal: Omit<LibGoal, 'id' | 'progress' | 'isCompleted'>) => Promise<void>;
   completeGoal: (goalId: string) => Promise<void>;
-<<<<<<< HEAD
-=======
   deleteGoal: (goalId: string) => Promise<void>;
   editGoal: (goalId: string, updates: Partial<LibGoal>) => Promise<void>;
   awardPoints: (amount: number, reason: string) => Promise<void>;
   redeemPoints: (cost: number) => Promise<boolean>;
->>>>>>> 7aec7f1bef5fe42ca1880c51a52cd53b6c0b71fb
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -325,10 +322,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-<<<<<<< HEAD
-  return (
-    <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal }}>
-=======
   const deleteGoal = async (goalId: string) => {
     if (!user) return;
     
@@ -467,7 +460,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal, deleteGoal, editGoal, awardPoints, redeemPoints }}>
->>>>>>> 7aec7f1bef5fe42ca1880c51a52cd53b6c0b71fb
       {children}
     </DataContext.Provider>
   );
