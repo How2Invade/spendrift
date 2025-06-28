@@ -19,10 +19,20 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Sparkles, BadgePercent, Smile, Gem, TrendingUp } from 'lucide-react';
+import { PlusCircle, Sparkles, BadgePercent, Smile, Gem, TrendingUp, CheckCircle, X, Trophy, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Goal } from '@/lib/types';
+
+// Custom Toast Type
+interface CustomToast {
+  id: string;
+  type: 'success' | 'info' | 'warning' | 'celebration';
+  title: string;
+  description: string;
+  points?: number;
+  duration?: number;
+}
 
 const goalSchema = z.object({
   title: z.string().min(3, { message: 'Goal title must be at least 3 characters.' }),
@@ -112,6 +122,7 @@ export default function GoalsPage() {
   const [streak, setStreak] = useState(0);
   const [justAddedGoalId, setJustAddedGoalId] = useState<string | null>(null);
   const [pointsAnimation, setPointsAnimation] = useState(false);
+  const [customToasts, setCustomToasts] = useState<CustomToast[]>([]);
   const { toast } = useToast();
   const { register, handleSubmit, reset, formState: { errors }, control } = useForm<z.infer<typeof goalSchema>>({
     resolver: zodResolver(goalSchema),
@@ -123,6 +134,27 @@ export default function GoalsPage() {
   // Watch form values for AI Suggestion
   const watchedTitle = useWatch({ control, name: 'title' });
   const watchedDescription = useWatch({ control, name: 'description' });
+
+  // Custom Toast System
+  const showCustomToast = (toastData: Omit<CustomToast, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    const newToast: CustomToast = {
+      ...toastData,
+      id,
+      duration: toastData.duration || 4000,
+    };
+    
+    setCustomToasts(prev => [...prev, newToast]);
+    
+    // Auto remove toast after duration
+    setTimeout(() => {
+      setCustomToasts(prev => prev.filter(t => t.id !== id));
+    }, newToast.duration);
+  };
+
+  const removeCustomToast = (id: string) => {
+    setCustomToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   // Animate points when they change
   useEffect(() => {
@@ -172,10 +204,14 @@ export default function GoalsPage() {
     // Award bonus points for accepting a goal
     awardPoints(5, 'Goal Acceptance Bonus');
     
-    toast({
-      title: 'Goal Added!',
-      description: `"${goal.title}" added. Earn ${goal.points} Zen Points! +5 bonus for accepting!`,
+    // Show custom toast instead of browser toast
+    showCustomToast({
+      type: 'success',
+      title: 'Goal Added! 🎯',
+      description: `"${goal.title}" has been added to your challenges.`,
+      points: goal.points + 5,
     });
+    
     setTimeout(() => setJustAddedGoalId(null), 2000);
   };
 
@@ -193,9 +229,20 @@ export default function GoalsPage() {
       completeGoal(goalId);
       
       // Award bonus points for streaks
+      let bonusPoints = 0;
       if (streak > 0 && streak % 3 === 0) {
+        bonusPoints = 10;
         awardPoints(10, 'Streak Bonus!');
       }
+      
+      // Show celebration toast for goal completion
+      showCustomToast({
+        type: 'celebration',
+        title: '🎉 Goal Completed!',
+        description: `Awesome! You've earned ${goal.points}${bonusPoints > 0 ? ` + ${bonusPoints} streak bonus` : ''} Zen Points!`,
+        points: goal.points + bonusPoints,
+        duration: 5000,
+      });
     }
   };
 
@@ -228,17 +275,121 @@ export default function GoalsPage() {
     addGoal({ ...data, points: Number(data.points), emoji: data.emoji });
     reset();
     setOpen(false);
+    
+    // Show custom toast for manual goal creation
+    showCustomToast({
+      type: 'success',
+      title: 'Custom Goal Created! ✨',
+      description: `"${data.title}" has been added to your challenges.`,
+      points: Number(data.points),
+    });
   };
 
+  // Custom Toast Component
+  const CustomToastContainer = () => (
+    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+      {customToasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={`
+            animate-in slide-in-from-right-full duration-300 fade-in-0
+            ${toast.type === 'celebration' ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500' : ''}
+            ${toast.type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500' : ''}
+            ${toast.type === 'info' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : ''}
+            ${toast.type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : ''}
+            text-white p-4 rounded-xl shadow-2xl border-l-4 border-white/30
+            backdrop-blur-sm relative overflow-hidden transform hover:scale-105 transition-transform
+            min-w-[320px] max-w-sm
+          `}
+        >
+          {/* Background Animation for Celebration */}
+          {toast.type === 'celebration' && (
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-0 left-0 w-full h-full animate-pulse bg-gradient-to-br from-yellow-300 to-transparent"></div>
+            </div>
+          )}
+          
+          {/* Close Button */}
+          <button
+            onClick={() => removeCustomToast(toast.id)}
+            className="absolute top-2 right-2 text-white/70 hover:text-white transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          
+          <div className="flex items-start gap-3 pr-6">
+            {/* Icon */}
+            <div className="flex-shrink-0 mt-0.5">
+              {toast.type === 'celebration' && <Trophy className="h-6 w-6 animate-bounce" />}
+              {toast.type === 'success' && <CheckCircle className="h-6 w-6" />}
+              {toast.type === 'info' && <Star className="h-6 w-6" />}
+              {toast.type === 'warning' && <Sparkles className="h-6 w-6" />}
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-lg mb-1">{toast.title}</h4>
+              <p className="text-white/90 text-sm leading-relaxed">{toast.description}</p>
+              
+              {/* Points Display */}
+              {toast.points && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
+                    <Gem className="h-4 w-4" />
+                    <span className="font-bold text-sm">+{toast.points} Zen Points</span>
+                  </div>
+                  {toast.type === 'celebration' && (
+                    <div className="flex gap-1">
+                      {[...Array(3)].map((_, i) => (
+                        <span
+                          key={i}
+                          className="text-yellow-300 animate-pulse text-lg"
+                          style={{ animationDelay: `${i * 0.1}s` }}
+                        >
+                          ⭐
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
+            <div
+              className="h-full bg-white/50 transition-all ease-linear"
+              style={{
+                animation: `shrink ${toast.duration}ms linear forwards`,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      
+      <style jsx>{`
+        @keyframes shrink {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+      `}</style>
+    </div>
+  );
+
   return (
-    <div className="p-4 md:p-8 flex flex-col gap-8 bg-background min-h-screen">
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+    <>
+      {/* Custom Toast Container */}
+      <CustomToastContainer />
+      
+      <div className="p-4 md:p-8 flex flex-col gap-8 bg-background min-h-screen relative">
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div>
           <h1 className="text-4xl font-bold text-primary mb-2 flex items-center gap-3">
             Your Goals
-            <div className={`flex items-center gap-2 text-green-600 text-lg font-mono bg-green-100 px-3 py-1 rounded-full transition-all duration-300 ${pointsAnimation ? 'scale-110 bg-green-200' : ''}`}>
-              <Gem className={`h-4 w-4 ${pointsAnimation ? 'animate-pulse' : ''}`} />
-              {points} Zen Points
+            <div className={`flex items-center gap-2 text-green-600 text-lg font-mono bg-green-100 px-3 py-1 rounded-full transition-all duration-500 ${pointsAnimation ? 'scale-110 bg-green-200 shadow-lg ring-2 ring-green-300 ring-opacity-50' : ''}`}>
+              <Gem className={`h-4 w-4 ${pointsAnimation ? 'animate-pulse text-green-700' : ''}`} />
+              <span className={`font-bold ${pointsAnimation ? 'text-green-800' : ''}`}>{points} Zen Points</span>
               {pointsAnimation && <TrendingUp className="h-4 w-4 animate-bounce text-green-700" />}
             </div>
             <span className="text-blue-600 text-lg font-mono bg-blue-100 px-3 py-1 rounded-full">Streak: {streak}</span>
@@ -317,10 +468,10 @@ export default function GoalsPage() {
                       className="rounded-lg px-4 py-1 font-mono text-sm"
                       onClick={async () => {
                         if ((watchedTitle?.length || 0) < 3 || (watchedDescription?.length || 0) < 10) {
-                          toast({
-                            title: 'Please enter a longer title and description!',
+                          showCustomToast({
+                            type: 'warning',
+                            title: 'Please enter more details!',
                             description: 'Title must be at least 3 characters and description at least 10 characters.',
-                            variant: 'destructive',
                           });
                           return;
                         }
@@ -393,17 +544,45 @@ export default function GoalsPage() {
         </TabsContent>
         <TabsContent value="accepted">
           {goals.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
               {goals.map((goal) => (
-                <div key={goal.id} className={justAddedGoalId === goal.id ? 'animate-pulse ring-2 ring-green-400 ring-offset-2 relative' : ''}>
+                <div key={goal.id} className={`
+                  transition-all duration-300 hover:scale-105
+                  ${justAddedGoalId === goal.id ? 'animate-pulse ring-2 ring-green-400 ring-offset-2 relative' : ''}
+                `}>
                   {justAddedGoalId === goal.id && (
                     <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
                       <span role="img" aria-label="confetti" className="text-5xl animate-bounce">🎉</span>
                     </div>
                   )}
-                  <GoalCard goal={goal} onEdit={handleEditGoal} onDelete={handleDeleteGoal} onComplete={handleCompleteGoal} />
+                  <GoalCard 
+                    goal={goal} 
+                    onEdit={handleEditGoal} 
+                    onDelete={handleDeleteGoal} 
+                    onComplete={handleCompleteGoal} 
+                  />
                 </div>
               ))}
+              
+              {/* Floating Celebration Effects */}
+              {customToasts.some(t => t.type === 'celebration') && (
+                <div className="fixed inset-0 pointer-events-none z-40">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute text-4xl animate-bounce"
+                      style={{
+                        left: `${20 + i * 12}%`,
+                        top: `${30 + (i % 3) * 20}%`,
+                        animationDelay: `${i * 0.2}s`,
+                        animationDuration: '2s',
+                      }}
+                    >
+                      {['🎊', '🎉', '⭐', '🌟', '💫', '✨'][i]}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
@@ -430,6 +609,7 @@ export default function GoalsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

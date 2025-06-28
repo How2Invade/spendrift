@@ -22,9 +22,6 @@ export default function GoalCard({ goal, onEdit, onDelete, onComplete }: GoalCar
 
   const handleComplete = () => {
     if (goal.isCompleted) return;
-    // Mockup verification step
-    const verified = window.confirm('Verification Step (Mockup)\n\nPlease confirm you have truly completed this goal!');
-    if (!verified) return;
     if (onComplete) onComplete(goal.id);
     else completeGoal(goal.id);
     setShowConfetti(true);
@@ -43,9 +40,6 @@ export default function GoalCard({ goal, onEdit, onDelete, onComplete }: GoalCar
           <CardTitle className="flex items-center gap-2">
             <span>{goal.emoji}</span>
             {goal.title}
-            {goal.category && (
-              <span className="ml-2 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-mono">{goal.category}</span>
-            )}
           </CardTitle>
           <div className="flex gap-2">
             {onEdit && <Button size="icon" variant="ghost" onClick={() => onEdit(goal)}><Edit className="w-4 h-4" /></Button>}
