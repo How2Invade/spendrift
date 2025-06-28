@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useData } from '@/context/data-context';
+import { useAuth } from '@/context/auth-context';
 import GoalCard from '@/components/goals/goal-card';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,9 +19,10 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Sparkles, BadgePercent, Smile } from 'lucide-react';
+import { PlusCircle, Sparkles, BadgePercent, Smile, Gem, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { Goal } from '@/lib/types';
 
 const goalSchema = z.object({
   title: z.string().min(3, { message: 'Goal title must be at least 3 characters.' }),
@@ -83,11 +85,11 @@ const mockAIGoals = [
 ];
 
 // Mock AI analysis function for points
-function aiAssignPoints(title, description) {
+function aiAssignPoints(title: string, description: string): number {
   // Simple mock: longer/more challenging goals get more points
   const lower = (title + ' ' + description).toLowerCase();
   if (lower.includes('save') && lower.match(/\d+/)) {
-    const amount = parseInt(lower.match(/\d+/)[0], 10);
+    const amount = parseInt(lower.match(/\d+/)?.[0] || '0', 10);
     return Math.min(100, Math.max(20, Math.floor(amount / 100)));
   }
   if (lower.includes('week') || lower.includes('7 days')) return 40;
@@ -99,16 +101,17 @@ function aiAssignPoints(title, description) {
 }
 
 export default function GoalsPage() {
-  const { goals, addGoal, completeGoal, deleteGoal, editGoal } = useData();
+  const { goals, addGoal, completeGoal, deleteGoal, editGoal, points, awardPoints } = useData();
+  const { user, userProfile } = useAuth();
   const [open, setOpen] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState(
     mockAIGoals.map((g, i) => ({ ...g, id: 'ai-' + i }))
   );
-  const [userPoints, setUserPoints] = useState(0);
-  const [editingGoal, setEditingGoal] = useState(null);
-  const [completedGoals, setCompletedGoals] = useState([]);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [completedGoals, setCompletedGoals] = useState<Array<Goal & { completedAt: Date }>>([]);
   const [streak, setStreak] = useState(0);
-  const [justAddedGoalId, setJustAddedGoalId] = useState(null);
+  const [justAddedGoalId, setJustAddedGoalId] = useState<string | null>(null);
+  const [pointsAnimation, setPointsAnimation] = useState(false);
   const { toast } = useToast();
   const { register, handleSubmit, reset, formState: { errors }, control } = useForm<z.infer<typeof goalSchema>>({
     resolver: zodResolver(goalSchema),
@@ -121,6 +124,27 @@ export default function GoalsPage() {
   const watchedTitle = useWatch({ control, name: 'title' });
   const watchedDescription = useWatch({ control, name: 'description' });
 
+  // Animate points when they change
+  useEffect(() => {
+    setPointsAnimation(true);
+    const timer = setTimeout(() => setPointsAnimation(false), 1000);
+    return () => clearTimeout(timer);
+  }, [points]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Goals Page - Current state:', {
+      points,
+      userProfile: userProfile ? {
+        id: userProfile.id,
+        points: userProfile.points,
+        display_name: userProfile.display_name
+      } : null,
+      user: user ? { id: user.id, email: user.email } : null,
+      goalsCount: goals.length
+    });
+  }, [points, userProfile, user, goals.length]);
+
   // Memoize AI suggestions so they don't change on every render
   const getAISuggestions = useMemo(() => () => {
     // In real app, call AI backend here
@@ -128,7 +152,7 @@ export default function GoalsPage() {
   }, []);
 
   // Accept an AI goal with animation and toast
-  const acceptAIGoal = (goal) => {
+  const acceptAIGoal = (goal: typeof mockAIGoals[0] & { id: string }) => {
     const newGoal = {
       ...goal,
       id: `${goal.title}-${Date.now()}`,
@@ -138,34 +162,42 @@ export default function GoalsPage() {
     addGoal(newGoal);
     setAISuggestions((prev) => prev.filter((g) => g.id !== goal.id));
     setJustAddedGoalId(newGoal.id);
+    
+    // Award bonus points for accepting a goal
+    awardPoints(5, 'Goal Acceptance Bonus');
+    
     toast({
       title: 'Goal Added!',
-      description: `"${goal.title}" added. Earn ${goal.points} points!`,
+      description: `"${goal.title}" added. Earn ${goal.points} Zen Points! +5 bonus for accepting!`,
     });
     setTimeout(() => setJustAddedGoalId(null), 2000);
   };
 
   // Reject an AI goal
-  const rejectAIGoal = (goal) => {
+  const rejectAIGoal = (goal: typeof mockAIGoals[0] & { id: string }) => {
     setAISuggestions((prev) => prev.filter((g) => g.id !== goal.id));
   };
 
   // When a goal is completed, award points and update streak/history
-  const handleCompleteGoal = (goalId) => {
+  const handleCompleteGoal = (goalId: string) => {
     const goal = goals.find((g) => g.id === goalId);
     if (goal && !goal.isCompleted) {
-      setUserPoints((prev) => prev + (goal.points || 0));
       setCompletedGoals((prev) => [{ ...goal, completedAt: new Date() }, ...prev]);
       setStreak((prev) => prev + 1);
       completeGoal(goalId);
+      
+      // Award bonus points for streaks
+      if (streak > 0 && streak % 3 === 0) {
+        awardPoints(10, 'Streak Bonus!');
+      }
     }
   };
 
   // Handle goal editing
-  const handleEditGoal = (goal) => setEditingGoal(goal);
-  const handleDeleteGoal = (goalId) => deleteGoal(goalId);
+  const handleEditGoal = (goal: Goal) => setEditingGoal(goal);
+  const handleDeleteGoal = (goalId: string) => deleteGoal(goalId);
 
-  const getAISuggestion = async (title, description) => {
+  const getAISuggestion = async (title: string, description: string) => {
     if (title.length > 2 && description.length > 9) {
       setAILoading(true);
       try {
@@ -186,7 +218,7 @@ export default function GoalsPage() {
     }
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: z.infer<typeof goalSchema>) => {
     addGoal({ ...data, points: Number(data.points), emoji: data.emoji });
     reset();
     setOpen(false);
@@ -198,11 +230,46 @@ export default function GoalsPage() {
         <div>
           <h1 className="text-4xl font-bold text-primary mb-2 flex items-center gap-3">
             Your Goals
-            <span className="text-green-600 text-lg font-mono bg-green-100 px-3 py-1 rounded-full">Points: {userPoints}</span>
+            <div className={`flex items-center gap-2 text-green-600 text-lg font-mono bg-green-100 px-3 py-1 rounded-full transition-all duration-300 ${pointsAnimation ? 'scale-110 bg-green-200' : ''}`}>
+              <Gem className={`h-4 w-4 ${pointsAnimation ? 'animate-pulse' : ''}`} />
+              {points} Zen Points
+              {pointsAnimation && <TrendingUp className="h-4 w-4 animate-bounce text-green-700" />}
+            </div>
             <span className="text-blue-600 text-lg font-mono bg-blue-100 px-3 py-1 rounded-full">Streak: {streak}</span>
           </h1>
           <p className="text-muted-foreground font-mono">Track your progress and stay motivated to reach your financial objectives.</p>
           <div className="mt-2 text-sm text-primary font-semibold">"Every small step counts. Keep going!"</div>
+          
+          {/* Debug section - remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+              <h3 className="font-bold text-yellow-800 mb-2">Debug Info (Development Only)</h3>
+              <div className="text-sm text-yellow-700 space-y-1">
+                <div>Current Points: {points}</div>
+                <div>User Profile Points: {userProfile?.points || 'N/A'}</div>
+                <div>User ID: {user?.id || 'N/A'}</div>
+                <div>User Email: {user?.email || 'N/A'}</div>
+              </div>
+              <div className="mt-3 space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => awardPoints(10, 'Debug Test')}
+                  className="text-xs"
+                >
+                  Test +10 Points
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => console.log('Current state:', { points, userProfile, user })}
+                  className="text-xs"
+                >
+                  Log State
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
@@ -251,7 +318,7 @@ export default function GoalsPage() {
                           });
                           return;
                         }
-                        await getAISuggestion(watchedTitle, watchedDescription);
+                        await getAISuggestion(watchedTitle || '', watchedDescription || '');
                       }}
                       disabled={aiLoading}
                     >
@@ -305,7 +372,7 @@ export default function GoalsPage() {
                   </div>
                   <div className="text-muted-foreground text-sm mb-2">{goal.description}</div>
                   <div className="flex gap-2 mt-auto">
-                    <Button size="sm" onClick={() => acceptAIGoal(goal)} variant="success">Accept</Button>
+                    <Button size="sm" onClick={() => acceptAIGoal(goal)} variant="default">Accept</Button>
                     <Button size="sm" onClick={() => rejectAIGoal(goal)} variant="outline">Reject</Button>
                   </div>
                 </div>
