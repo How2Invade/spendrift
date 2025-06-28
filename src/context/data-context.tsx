@@ -13,6 +13,13 @@ interface DataContextProps {
   addTransaction: (transaction: Omit<LibTransaction, 'id' | 'emotionalState'>) => Promise<void>;
   addGoal: (goal: Omit<LibGoal, 'id' | 'progress' | 'isCompleted'>) => Promise<void>;
   completeGoal: (goalId: string) => Promise<void>;
+<<<<<<< HEAD
+=======
+  deleteGoal: (goalId: string) => Promise<void>;
+  editGoal: (goalId: string, updates: Partial<LibGoal>) => Promise<void>;
+  awardPoints: (amount: number, reason: string) => Promise<void>;
+  redeemPoints: (cost: number) => Promise<boolean>;
+>>>>>>> 7aec7f1bef5fe42ca1880c51a52cd53b6c0b71fb
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -318,8 +325,149 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+<<<<<<< HEAD
   return (
     <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal }}>
+=======
+  const deleteGoal = async (goalId: string) => {
+    if (!user) return;
+    
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    try {
+      // Update goal
+      const { error: goalError } = await supabase
+        .from('goals')
+        .update({
+          is_completed: false,
+          progress: 0,
+        })
+        .eq('id', goalId);
+
+      if (goalError) throw goalError;
+
+      // Update user points
+      const newPoints = points - goal.points;
+      const { error: userError } = await supabase
+        .from('user_profiles')
+        .update({
+          points: newPoints
+        })
+        .eq('id', user.id);
+
+      if (userError) throw userError;
+      
+      toast({
+        title: 'Goal Deleted!',
+        description: `You've lost ${goal.points} Zen Points.`,
+      });
+    } catch (error) {
+      console.error("Error deleting goal: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not delete goal." });
+    }
+  };
+
+  const editGoal = async (goalId: string, updates: Partial<LibGoal>) => {
+    if (!user) return;
+    
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    try {
+      // Update goal
+      const { error: goalError } = await supabase
+        .from('goals')
+        .update(updates)
+        .eq('id', goalId);
+
+      if (goalError) throw goalError;
+
+      // Update user points
+      const newPoints = points + (updates.points || 0) - goal.points;
+      const { error: userError } = await supabase
+        .from('user_profiles')
+        .update({
+          points: newPoints
+        })
+        .eq('id', user.id);
+
+      if (userError) throw userError;
+      
+      toast({
+        title: 'Goal Updated!',
+        description: `You've earned ${updates.points || 0} Zen Points!`,
+      });
+    } catch (error) {
+      console.error("Error editing goal: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not edit goal." });
+    }
+  };
+
+  const awardPoints = async (amount: number, reason: string) => {
+    if (!user) return;
+    
+    try {
+      console.log('Awarding points:', amount, 'for reason:', reason);
+      console.log('Current points:', points);
+      
+      // Optimistically update local state
+      const newPoints = points + amount;
+      setPoints(newPoints);
+      
+      // Update user points in database
+      const { error: userError } = await supabase
+        .from('user_profiles')
+        .update({
+          points: newPoints
+        })
+        .eq('id', user.id);
+
+      if (userError) {
+        console.error('Error updating points in database:', userError);
+        // Revert local state if database update failed
+        setPoints(points);
+        throw userError;
+      }
+      
+      console.log('Points updated successfully in database to:', newPoints);
+      
+      toast({
+        title: 'Points Awarded! 🎉',
+        description: `You've earned ${amount} Zen Points! Reason: ${reason}`,
+      });
+    } catch (error) {
+      console.error("Error awarding points: ", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not award points." });
+    }
+  };
+
+  const redeemPoints = async (cost: number) => {
+    if (!user) return false;
+    if (points < cost) return false;
+    const newPoints = points - cost;
+    setPoints(newPoints);
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ points: newPoints })
+        .eq('id', user.id);
+      if (error) {
+        setPoints(points); // revert
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not redeem reward.' });
+        return false;
+      }
+      return true;
+    } catch (e) {
+      setPoints(points); // revert
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not redeem reward.' });
+      return false;
+    }
+  };
+
+  return (
+    <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal, deleteGoal, editGoal, awardPoints, redeemPoints }}>
+>>>>>>> 7aec7f1bef5fe42ca1880c51a52cd53b6c0b71fb
       {children}
     </DataContext.Provider>
   );
