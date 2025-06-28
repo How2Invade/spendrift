@@ -376,10 +376,14 @@ export default function GoalsPage() {
         <DialogContent className="max-w-md mx-auto text-center">
           <DialogHeader>
             <DialogTitle className="text-3xl font-bold text-primary mb-2">🎉 Congratulations!</DialogTitle>
+            {showCongrats && (
+              <DialogDescription>
+                You completed: <span className="font-bold">{showCongrats.goal.title}</span>
+              </DialogDescription>
+            )}
           </DialogHeader>
           {showCongrats && (
             <>
-              <div className="text-lg mb-2">You completed: <span className="font-bold">{showCongrats.goal.title}</span></div>
               <div className="text-2xl font-retro mb-4">+{showCongrats.goal.points + showCongrats.bonusPoints} Zen Points</div>
               {showCongrats.bonusPoints > 0 && <div className="text-green-600 font-mono mb-2">Streak Bonus: +{showCongrats.bonusPoints}</div>}
               <Button
