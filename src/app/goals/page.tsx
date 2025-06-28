@@ -134,6 +134,7 @@ export default function GoalsPage() {
   // Watch form values for AI Suggestion
   const watchedTitle = useWatch({ control, name: 'title' });
   const watchedDescription = useWatch({ control, name: 'description' });
+  const [showCongrats, setShowCongrats] = useState<null | { goal: Goal, bonusPoints: number }>(null);
 
   // Custom Toast System
   const showCustomToast = (toastData: Omit<CustomToast, 'id'>) => {
@@ -220,29 +221,18 @@ export default function GoalsPage() {
     setAISuggestions((prev) => prev.filter((g) => g.id !== goal.id));
   };
 
-  // When a goal is completed, award points and update streak/history
+  // When a goal is completed, show modal instead of toast
   const handleCompleteGoal = (goalId: string) => {
     const goal = goals.find((g) => g.id === goalId);
     if (goal && !goal.isCompleted) {
       setCompletedGoals((prev) => [{ ...goal, completedAt: new Date() }, ...prev]);
       setStreak((prev) => prev + 1);
       completeGoal(goalId);
-      
-      // Award bonus points for streaks
       let bonusPoints = 0;
       if (streak > 0 && streak % 3 === 0) {
         bonusPoints = 10;
-        awardPoints(10, 'Streak Bonus!');
       }
-      
-      // Show celebration toast for goal completion
-      showCustomToast({
-        type: 'celebration',
-        title: '🎉 Goal Completed!',
-        description: `Awesome! You've earned ${goal.points}${bonusPoints > 0 ? ` + ${bonusPoints} streak bonus` : ''} Zen Points!`,
-        points: goal.points + bonusPoints,
-        duration: 5000,
-      });
+      setShowCongrats({ goal, bonusPoints });
     }
   };
 
@@ -381,6 +371,30 @@ export default function GoalsPage() {
     <>
       {/* Custom Toast Container */}
       <CustomToastContainer />
+      {/* Congratulations Modal */}
+      <Dialog open={!!showCongrats} onOpenChange={open => { if (!open) setShowCongrats(null); }}>
+        <DialogContent className="max-w-md mx-auto text-center">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold text-primary mb-2">🎉 Congratulations!</DialogTitle>
+          </DialogHeader>
+          {showCongrats && (
+            <>
+              <div className="text-lg mb-2">You completed: <span className="font-bold">{showCongrats.goal.title}</span></div>
+              <div className="text-2xl font-retro mb-4">+{showCongrats.goal.points + showCongrats.bonusPoints} Zen Points</div>
+              {showCongrats.bonusPoints > 0 && <div className="text-green-600 font-mono mb-2">Streak Bonus: +{showCongrats.bonusPoints}</div>}
+              <Button
+                className="w-full mt-2 py-3 text-lg font-bold"
+                onClick={() => {
+                  awardPoints(showCongrats.goal.points + showCongrats.bonusPoints, 'Goal Completion');
+                  setShowCongrats(null);
+                }}
+              >
+                Claim Points
+              </Button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
       
       <div className="p-4 md:p-8 flex flex-col gap-8 bg-background min-h-screen relative">
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
@@ -396,37 +410,6 @@ export default function GoalsPage() {
           </h1>
           <p className="text-muted-foreground font-mono">Track your progress and stay motivated to reach your financial objectives.</p>
           <div className="mt-2 text-sm text-primary font-semibold">"Every small step counts. Keep going!"</div>
-          
-          {/* Debug section - remove in production */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-              <h3 className="font-bold text-yellow-800 mb-2">Debug Info (Development Only)</h3>
-              <div className="text-sm text-yellow-700 space-y-1">
-                <div>Current Points: {points}</div>
-                <div>User Profile Points: {userProfile?.points || 'N/A'}</div>
-                <div>User ID: {user?.id || 'N/A'}</div>
-                <div>User Email: {user?.email || 'N/A'}</div>
-              </div>
-              <div className="mt-3 space-x-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => awardPoints(10, 'Debug Test')}
-                  className="text-xs"
-                >
-                  Test +10 Points
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => console.log('Current state:', { points, userProfile, user })}
-                  className="text-xs"
-                >
-                  Log State
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
         <div className="flex gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
@@ -563,26 +546,6 @@ export default function GoalsPage() {
                   />
                 </div>
               ))}
-              
-              {/* Floating Celebration Effects */}
-              {customToasts.some(t => t.type === 'celebration') && (
-                <div className="fixed inset-0 pointer-events-none z-40">
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute text-4xl animate-bounce"
-                      style={{
-                        left: `${20 + i * 12}%`,
-                        top: `${30 + (i % 3) * 20}%`,
-                        animationDelay: `${i * 0.2}s`,
-                        animationDuration: '2s',
-                      }}
-                    >
-                      {['🎊', '🎉', '⭐', '🌟', '💫', '✨'][i]}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           ) : (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
