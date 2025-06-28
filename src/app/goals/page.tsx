@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useData } from '@/context/data-context';
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Sparkles } from 'lucide-react';
+import { PlusCircle, Sparkles, BadgePercent, Smile } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -110,13 +110,16 @@ export default function GoalsPage() {
   const [streak, setStreak] = useState(0);
   const [justAddedGoalId, setJustAddedGoalId] = useState(null);
   const { toast } = useToast();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof goalSchema>>({
+  const { register, handleSubmit, reset, formState: { errors }, control } = useForm<z.infer<typeof goalSchema>>({
     resolver: zodResolver(goalSchema),
   });
   const [activeTab, setActiveTab] = useState('accepted');
-  const [aiPoints, setAIPoints] = useState(20);
-  const [aiEmoji, setAIEmoji] = useState('🎯');
+  const [aiPoints, setAIPoints] = useState('');
+  const [aiEmoji, setAIEmoji] = useState('');
   const [aiLoading, setAILoading] = useState(false);
+  // Watch form values for AI Suggestion
+  const watchedTitle = useWatch({ control, name: 'title' });
+  const watchedDescription = useWatch({ control, name: 'description' });
 
   // Memoize AI suggestions so they don't change on every render
   const getAISuggestions = useMemo(() => () => {
@@ -172,11 +175,11 @@ export default function GoalsPage() {
           body: JSON.stringify({ title, description }),
         });
         const aiRes = await res.json();
-        setAIPoints(aiRes.points || 20);
-        setAIEmoji(aiRes.emoji || '🎯');
+        setAIPoints(aiRes.points || '');
+        setAIEmoji(aiRes.emoji || '');
       } catch {
-        setAIPoints(20);
-        setAIEmoji('🎯');
+        setAIPoints('');
+        setAIEmoji('');
       } finally {
         setAILoading(false);
       }
@@ -209,44 +212,72 @@ export default function GoalsPage() {
                 Add Goal
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <form onSubmit={handleSubmit(onSubmit)}>
+            <DialogContent className="sm:max-w-[430px] bg-card/90 rounded-2xl shadow-lg">
+              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
                 <DialogHeader>
-                  <DialogTitle>Add a New Goal</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-2xl font-bold mb-1">Add a New Goal</DialogTitle>
+                  <DialogDescription className="mb-2">
                     Create a new financial goal to work towards. Make it challenging but achievable!
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="title" className="text-right">Title</Label>
-                    <Input id="title" {...register('title')} className="col-span-3" />
-                    {errors.title && <p className="text-destructive text-xs col-span-4">{errors.title.message}</p>}
+                {/* Title & Description */}
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <Label htmlFor="title" className="text-sm mb-1">Title</Label>
+                    <Input id="title" {...register('title')} className="w-full rounded-lg bg-muted/60 focus:ring-2 focus:ring-primary" placeholder="e.g. Save for a new phone" />
+                    {errors.title && <p className="text-destructive text-xs mt-1">{errors.title.message}</p>}
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">Description</Label>
-                    <Input id="description" {...register('description')} className="col-span-3" />
-                    {errors.description && <p className="text-destructive text-xs col-span-4">{errors.description.message}</p>}
+                  <div>
+                    <Label htmlFor="description" className="text-sm mb-1">Description</Label>
+                    <Input id="description" {...register('description')} className="w-full rounded-lg bg-muted/60 focus:ring-2 focus:ring-primary" placeholder="Describe your goal..." />
+                    {errors.description && <p className="text-destructive text-xs mt-1">{errors.description.message}</p>}
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="points" className="text-right">Points</Label>
-                    <Input id="points" type="number" {...register('points')} value={aiPoints} onChange={e => setAIPoints(Number(e.target.value))} className="col-span-2" />
-                    <Button type="button" size="sm" className="col-span-1" onClick={async (e) => {
-                      const form = e.currentTarget.form;
-                      const title = form?.title?.value || '';
-                      const description = form?.description?.value || '';
-                      await getAISuggestion(title, description);
-                    }} disabled={aiLoading}>
-                      {aiLoading ? 'AI...' : 'Get AI Suggestion'}
+                </div>
+                <div className="border-t border-border my-2" />
+                {/* AI Suggestion Section */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-center">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="rounded-lg px-4 py-1 font-mono text-sm"
+                      onClick={async () => {
+                        if ((watchedTitle?.length || 0) < 3 || (watchedDescription?.length || 0) < 10) {
+                          toast({
+                            title: 'Please enter a longer title and description!',
+                            description: 'Title must be at least 3 characters and description at least 10 characters.',
+                            variant: 'destructive',
+                          });
+                          return;
+                        }
+                        await getAISuggestion(watchedTitle, watchedDescription);
+                      }}
+                      disabled={aiLoading}
+                    >
+                      {aiLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></span>
+                          AI...
+                        </span>
+                      ) : (
+                        <span>✨ Get AI Suggestion</span>
+                      )}
                     </Button>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="emoji" className="text-right">Emoji</Label>
-                    <Input id="emoji" {...register('emoji')} value={aiEmoji} onChange={e => setAIEmoji(e.target.value)} className="col-span-3" />
+                  <div className="flex gap-3 mt-2">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <Label htmlFor="points" className="text-xs mb-1 flex items-center gap-1"><BadgePercent className="w-4 h-4" /> Points</Label>
+                      <Input id="points" type="number" {...register('points')} value={aiPoints} onChange={e => setAIPoints(e.target.value)} className="w-full rounded-lg bg-muted/60 focus:ring-2 focus:ring-primary text-lg" placeholder="AI will suggest" />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-1">
+                      <Label htmlFor="emoji" className="text-xs mb-1 flex items-center gap-1"><Smile className="w-4 h-4" /> Emoji</Label>
+                      <Input id="emoji" {...register('emoji')} value={aiEmoji} onChange={e => setAIEmoji(e.target.value)} className="w-full rounded-lg bg-muted/60 focus:ring-2 focus:ring-primary text-lg" placeholder="AI will suggest" />
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" disabled={!!errors.title || !!errors.description}>Save Goal</Button>
+                  <Button type="submit" className="w-full mt-2 py-3 text-lg font-bold" disabled={!!errors.title || !!errors.description}>Save Goal</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
