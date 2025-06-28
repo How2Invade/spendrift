@@ -19,15 +19,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Sparkles } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const goalSchema = z.object({
   title: z.string().min(3, { message: 'Goal title must be at least 3 characters.' }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters.' }),
   points: z.coerce.number().min(10, { message: 'Points must be at least 10.' }),
   emoji: z.string().min(1, { message: 'Please add an emoji.' }),
+  category: z.string().optional(),
 });
 
-// Mock AI goal suggestions
+// Mock AI goal suggestions (bank of 8 goals)
 const mockAIGoals = [
   {
     title: 'Save ₹5000 this month',
@@ -47,16 +50,73 @@ const mockAIGoals = [
     points: 40,
     emoji: '🍲',
   },
+  {
+    title: 'Review subscriptions',
+    description: 'Audit your monthly subscriptions and cancel one you don\'t use.',
+    points: 25,
+    emoji: '🔍',
+  },
+  {
+    title: 'Walk 10,000 steps daily for a week',
+    description: 'Stay healthy and track your steps for 7 days.',
+    points: 20,
+    emoji: '🚶',
+  },
+  {
+    title: 'No impulse buys for 10 days',
+    description: 'Avoid all unplanned purchases for 10 days.',
+    points: 35,
+    emoji: '🛑',
+  },
+  {
+    title: 'Read a finance book',
+    description: 'Finish reading a book about personal finance.',
+    points: 60,
+    emoji: '📚',
+  },
+  {
+    title: 'Cook all meals at home for a week',
+    description: 'Don\'t eat out or order in for 7 days.',
+    points: 45,
+    emoji: '👨‍🍳',
+  },
 ];
 
+// Mock AI analysis function for points
+function aiAssignPoints(title, description) {
+  // Simple mock: longer/more challenging goals get more points
+  const lower = (title + ' ' + description).toLowerCase();
+  if (lower.includes('save') && lower.match(/\d+/)) {
+    const amount = parseInt(lower.match(/\d+/)[0], 10);
+    return Math.min(100, Math.max(20, Math.floor(amount / 100)));
+  }
+  if (lower.includes('week') || lower.includes('7 days')) return 40;
+  if (lower.includes('month')) return 60;
+  if (lower.includes('read') || lower.includes('book')) return 30;
+  if (lower.includes('no') && lower.includes('spend')) return 35;
+  if (lower.includes('track')) return 25;
+  return 20;
+}
+
 export default function GoalsPage() {
-  const { goals, addGoal, completeGoal } = useData();
+  const { goals, addGoal, completeGoal, deleteGoal, editGoal } = useData();
   const [open, setOpen] = useState(false);
-  const [aiSuggestions, setAISuggestions] = useState([]);
+  const [aiSuggestions, setAISuggestions] = useState(
+    mockAIGoals.map((g, i) => ({ ...g, id: 'ai-' + i }))
+  );
   const [userPoints, setUserPoints] = useState(0);
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [completedGoals, setCompletedGoals] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [justAddedGoalId, setJustAddedGoalId] = useState(null);
+  const { toast } = useToast();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof goalSchema>>({
     resolver: zodResolver(goalSchema),
   });
+  const [activeTab, setActiveTab] = useState('accepted');
+  const [aiPoints, setAIPoints] = useState(20);
+  const [aiEmoji, setAIEmoji] = useState('🎯');
+  const [aiLoading, setAILoading] = useState(false);
 
   // Memoize AI suggestions so they don't change on every render
   const getAISuggestions = useMemo(() => () => {
@@ -64,33 +124,67 @@ export default function GoalsPage() {
     setAISuggestions(mockAIGoals.map((g, i) => ({ ...g, id: 'ai-' + i })));
   }, []);
 
-  // Accept an AI goal
+  // Accept an AI goal with animation and toast
   const acceptAIGoal = (goal) => {
-    addGoal({
+    const newGoal = {
       ...goal,
       id: `${goal.title}-${Date.now()}`,
       progress: 0,
       isCompleted: false,
+    };
+    addGoal(newGoal);
+    setAISuggestions((prev) => prev.filter((g) => g.id !== goal.id));
+    setJustAddedGoalId(newGoal.id);
+    toast({
+      title: 'Goal Added!',
+      description: `"${goal.title}" added. Earn ${goal.points} points!`,
     });
-    setAISuggestions((prev) => prev.filter((g) => g.title !== goal.title));
+    setTimeout(() => setJustAddedGoalId(null), 2000);
   };
 
   // Reject an AI goal
   const rejectAIGoal = (goal) => {
-    setAISuggestions((prev) => prev.filter((g) => g.title !== goal.title));
+    setAISuggestions((prev) => prev.filter((g) => g.id !== goal.id));
   };
 
-  // When a goal is completed, award points
+  // When a goal is completed, award points and update streak/history
   const handleCompleteGoal = (goalId) => {
     const goal = goals.find((g) => g.id === goalId);
     if (goal && !goal.isCompleted) {
       setUserPoints((prev) => prev + (goal.points || 0));
+      setCompletedGoals((prev) => [{ ...goal, completedAt: new Date() }, ...prev]);
+      setStreak((prev) => prev + 1);
       completeGoal(goalId);
     }
   };
 
-  const onSubmit = (data: z.infer<typeof goalSchema>) => {
-    addGoal(data);
+  // Handle goal editing
+  const handleEditGoal = (goal) => setEditingGoal(goal);
+  const handleDeleteGoal = (goalId) => deleteGoal(goalId);
+
+  const getAISuggestion = async (title, description) => {
+    if (title.length > 2 && description.length > 9) {
+      setAILoading(true);
+      try {
+        const res = await fetch('/api/analyze-goal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, description }),
+        });
+        const aiRes = await res.json();
+        setAIPoints(aiRes.points || 20);
+        setAIEmoji(aiRes.emoji || '🎯');
+      } catch {
+        setAIPoints(20);
+        setAIEmoji('🎯');
+      } finally {
+        setAILoading(false);
+      }
+    }
+  };
+
+  const onSubmit = (data) => {
+    addGoal({ ...data, points: Number(data.points), emoji: data.emoji });
     reset();
     setOpen(false);
   };
@@ -102,8 +196,10 @@ export default function GoalsPage() {
           <h1 className="text-4xl font-bold text-primary mb-2 flex items-center gap-3">
             Your Goals
             <span className="text-green-600 text-lg font-mono bg-green-100 px-3 py-1 rounded-full">Points: {userPoints}</span>
+            <span className="text-blue-600 text-lg font-mono bg-blue-100 px-3 py-1 rounded-full">Streak: {streak}</span>
           </h1>
           <p className="text-muted-foreground font-mono">Track your progress and stay motivated to reach your financial objectives.</p>
+          <div className="mt-2 text-sm text-primary font-semibold">"Every small step counts. Keep going!"</div>
         </div>
         <div className="flex gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
@@ -134,17 +230,23 @@ export default function GoalsPage() {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="points" className="text-right">Points</Label>
-                    <Input id="points" type="number" {...register('points')} className="col-span-3" />
-                    {errors.points && <p className="text-destructive text-xs col-span-4">{errors.points.message}</p>}
+                    <Input id="points" type="number" {...register('points')} value={aiPoints} onChange={e => setAIPoints(Number(e.target.value))} className="col-span-2" />
+                    <Button type="button" size="sm" className="col-span-1" onClick={async (e) => {
+                      const form = e.currentTarget.form;
+                      const title = form?.title?.value || '';
+                      const description = form?.description?.value || '';
+                      await getAISuggestion(title, description);
+                    }} disabled={aiLoading}>
+                      {aiLoading ? 'AI...' : 'Get AI Suggestion'}
+                    </Button>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="emoji" className="text-right">Emoji</Label>
-                    <Input id="emoji" {...register('emoji')} className="col-span-3" />
-                    {errors.emoji && <p className="text-destructive text-xs col-span-4">{errors.emoji.message}</p>}
+                    <Input id="emoji" {...register('emoji')} value={aiEmoji} onChange={e => setAIEmoji(e.target.value)} className="col-span-3" />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit">Save Goal</Button>
+                  <Button type="submit" disabled={!!errors.title || !!errors.description}>Save Goal</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -157,42 +259,72 @@ export default function GoalsPage() {
           )}
         </div>
       </header>
-      {/* AI Suggestions */}
-      {aiSuggestions.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-primary mb-2 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-green-500" /> AI Suggested Goals
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {aiSuggestions.map((goal) => (
-              <div key={goal.id} className="bg-card border border-primary/20 rounded-lg p-4 flex flex-col gap-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="suggested">Suggested Goals</TabsTrigger>
+          <TabsTrigger value="accepted">Accepted Challenges</TabsTrigger>
+        </TabsList>
+        <TabsContent value="suggested">
+          {aiSuggestions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {aiSuggestions.map((goal) => (
+                <div key={goal.id} className="bg-card border border-primary/20 rounded-lg p-4 flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-xl font-bold">
+                    <span>{goal.emoji}</span> {goal.title}
+                  </div>
+                  <div className="text-muted-foreground text-sm mb-2">{goal.description}</div>
+                  <div className="flex gap-2 mt-auto">
+                    <Button size="sm" onClick={() => acceptAIGoal(goal)} variant="success">Accept</Button>
+                    <Button size="sm" onClick={() => rejectAIGoal(goal)} variant="outline">Reject</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 border-2 border-dashed rounded-lg">
+              <h2 className="text-xl font-semibold text-primary">No Suggestions Left!</h2>
+              <p className="text-muted-foreground mt-2">You have accepted or rejected all suggested goals.</p>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="accepted">
+          {goals.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {goals.map((goal) => (
+                <div key={goal.id} className={justAddedGoalId === goal.id ? 'animate-pulse ring-2 ring-green-400 ring-offset-2 relative' : ''}>
+                  {justAddedGoalId === goal.id && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                      <span role="img" aria-label="confetti" className="text-5xl animate-bounce">🎉</span>
+                    </div>
+                  )}
+                  <GoalCard goal={goal} onEdit={handleEditGoal} onDelete={handleDeleteGoal} onComplete={handleCompleteGoal} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 border-2 border-dashed rounded-lg">
+              <h2 className="text-xl font-semibold text-primary">No Accepted Challenges!</h2>
+              <p className="text-muted-foreground mt-2">Accept a suggested goal to get started.</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+      {/* Completed Goals History */}
+      {completedGoals.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-bold text-primary mb-4">Completed Goals</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {completedGoals.map((goal, idx) => (
+              <div key={goal.id + idx} className="bg-card border border-border rounded-lg p-4 flex flex-col gap-2 opacity-70">
                 <div className="flex items-center gap-2 text-xl font-bold">
                   <span>{goal.emoji}</span> {goal.title}
                 </div>
                 <div className="text-muted-foreground text-sm mb-2">{goal.description}</div>
-                <div className="flex gap-2 mt-auto">
-                  <Button size="sm" onClick={() => acceptAIGoal(goal)} variant="success">Accept</Button>
-                  <Button size="sm" onClick={() => rejectAIGoal(goal)} variant="outline">Reject</Button>
-                </div>
+                <div className="text-xs text-muted-foreground">Completed at: {goal.completedAt.toLocaleString()}</div>
               </div>
             ))}
           </div>
         </div>
-      )}
-      {/* User Goals */}
-      {goals.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {goals.map((goal) => (
-            <GoalCard key={goal.id} goal={goal} onComplete={handleCompleteGoal} />
-          ))}
-        </div>
-      ) : (
-        aiSuggestions.length === 0 && (
-          <div className="text-center py-16 border-2 border-dashed rounded-lg">
-            <h2 className="text-xl font-semibold text-primary">No Goals Yet!</h2>
-            <p className="text-muted-foreground mt-2">Click "Add Goal" or "Suggest Goals" to get started on your financial journey.</p>
-          </div>
-        )
       )}
     </div>
   );

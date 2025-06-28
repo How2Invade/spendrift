@@ -216,13 +216,22 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const addGoal = async (goal: Omit<LibGoal, 'id' | 'progress' | 'isCompleted'>) => {
     if (!user) return;
-    
+
+    // Optimistically add to local state
+    const tempGoal = {
+      ...goal,
+      id: 'temp-' + Date.now(),
+      progress: 0,
+      isCompleted: false,
+    };
+    setGoals(prev => [tempGoal, ...prev]);
+
     try {
       const supaGoal = {
         user_id: user.id,
         title: goal.title,
         description: goal.description || null,
-        target_amount: 1000, // Default target amount since it's not in the lib Goal type
+        target_amount: 1000,
         current_amount: 0,
         deadline: null,
         category: getCategoryFromEmoji(goal.emoji),
@@ -231,14 +240,25 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         is_completed: false,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('goals')
-        .insert(supaGoal);
+        .insert(supaGoal)
+        .select();
 
       if (error) throw error;
 
+      // Replace temp goal with real one from DB
+      if (data && data[0]) {
+        setGoals(prev => [
+          { ...tempGoal, ...data[0], id: data[0].id },
+          ...prev.filter(g => g.id !== tempGoal.id),
+        ]);
+      }
+
       toast({ title: "Goal Added!", description: "Let's start working on it!" });
     } catch (error) {
+      // Remove temp goal if error
+      setGoals(prev => prev.filter(g => g.id !== tempGoal.id));
       console.error("Error adding goal: ", error);
       toast({ variant: "destructive", title: "Error", description: "Could not add goal." });
     }
