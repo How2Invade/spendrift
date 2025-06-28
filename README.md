@@ -11,7 +11,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-[Live Demo](https://spendrift.vercel.app) • [Documentation](./docs) • [Report Bug](https://github.com/your-username/spendrift/issues)
+[Live Demo](https://spendrift.vercel.app) • [Documentation](./docs) • [Report Bug](https://github.com/How2Invade/spendrift/issues)
 
 </div>
 
