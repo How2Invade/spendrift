@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { SpenDriftLogo } from '@/components/icons';
-import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle, Gem, BrainCircuit, LogOut } from 'lucide-react';
+import { LayoutGrid, BarChart2, Trophy, PlusCircle, MessageCircle, Gem, BrainCircuit, LogOut, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/theme-toggle';
 import { useAuth } from '@/context/auth-context';
@@ -23,6 +23,7 @@ const links = [
   { href: '/rewards', label: 'REWARDS', icon: Gem, emoji: '💎', code: '004' },
   { href: '/reflection', label: 'REFLECTION', icon: BrainCircuit, emoji: '🔮', code: '005' },
   { href: '/guidance', label: 'GUIDANCE', icon: MessageCircle, emoji: '🤖', code: '006' },
+  { href: '/ai-insights', label: 'AI INSIGHTS', icon: Sparkles, emoji: '✨', code: '008' },
   { href: '/add-expense', label: 'ADD_EXPENSE', icon: PlusCircle, emoji: '💸', code: '007' },
 ];
 
