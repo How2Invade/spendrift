@@ -114,9 +114,9 @@ export default function ChatInterface() {
   }
 
   return (
-    <Card className="glassmorphism w-full flex-1 flex flex-col h-full overflow-hidden">
-      <CardContent className="flex-1 flex flex-col p-4 gap-4">
-        <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
+    <Card className="glassmorphism w-full flex-1 flex flex-col h-full overflow-hidden min-h-[400px]">
+      <CardContent className="flex-1 flex flex-col p-4 gap-4 min-h-0">
+        <ScrollArea className="flex-1 pr-4 min-h-[300px] h-[400px]" ref={scrollAreaRef}>
          <div className="space-y-4" ref={viewportRef}>
             {messages.map((message, index) => (
               <div
