@@ -21,6 +21,10 @@ export default function GoalCard({ goal, onEdit, onDelete, onComplete }: GoalCar
   const [showConfetti, setShowConfetti] = useState(false);
 
   const handleComplete = () => {
+    if (goal.isCompleted) return;
+    // Mockup verification step
+    const verified = window.confirm('Verification Step (Mockup)\n\nPlease confirm you have truly completed this goal!');
+    if (!verified) return;
     if (onComplete) onComplete(goal.id);
     else completeGoal(goal.id);
     setShowConfetti(true);

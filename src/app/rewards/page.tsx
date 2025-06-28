@@ -92,7 +92,7 @@ export default function RewardsPage() {
           </div>
         </div>
       </header>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs key={points} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="my-rewards">My Rewards</TabsTrigger>
           <TabsTrigger value="trophy-case">Trophy Case</TabsTrigger>

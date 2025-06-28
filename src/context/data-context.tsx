@@ -72,7 +72,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Set points from user profile
-    if (userProfile) {
+    if (userProfile && typeof userProfile.points === 'number') {
       setPoints(userProfile.points);
     }
 
