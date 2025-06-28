@@ -59,22 +59,29 @@ const realWorldRewards = [
 ];
 
 export default function RewardsPage() {
-  const { points } = useData();
+  const { points, redeemPoints } = useData();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('my-rewards');
   const [showConfetti, setShowConfetti] = useState(false);
   const [showRedeem, setShowRedeem] = useState(false);
-  const [redeemedReward, setRedeemedReward] = useState(null);
+  const [redeemedReward, setRedeemedReward] = useState<any>(null);
+  const [redeemError, setRedeemError] = useState("");
 
-  const handleRedeem = (reward) => {
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 2000);
+  const handleRedeem = async (reward: any) => {
+    setRedeemError("");
     setRedeemedReward(reward);
     setShowRedeem(true);
-    // toast({
-    //   title: 'Coming Soon! 🚀',
-    //   description: 'Point redemption is in the works. Your points are safe!',
-    // });
+
+    if (points < reward.cost) {
+      setRedeemError("Not enough points to redeem this reward.");
+      return;
+    }
+    const success = await redeemPoints(reward.cost);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 2000);
+    if (!success) {
+      setRedeemError("There was an error redeeming your reward. Please try again later.");
+    }
   };
 
   return (
@@ -210,9 +217,15 @@ export default function RewardsPage() {
               </DialogHeader>
               <div className="flex flex-col items-center gap-3 my-4">
                 <div className="text-4xl">{redeemedReward?.emoji}</div>
-                <div className="bg-background/80 border border-primary/30 rounded-lg px-6 py-3 font-mono text-lg text-primary shadow">
-                  Coupon Code: <span className="font-bold">ZEN-FAKE-{Math.floor(1000 + Math.random() * 9000)}</span>
-                </div>
+                {redeemError ? (
+                  <div className="bg-destructive/10 border border-destructive/30 rounded-lg px-6 py-3 font-mono text-lg text-destructive shadow">
+                    {redeemError}
+                  </div>
+                ) : (
+                  <div className="bg-background/80 border border-primary/30 rounded-lg px-6 py-3 font-mono text-lg text-primary shadow">
+                    Coupon Code: <span className="font-bold">ZEN-FAKE-{Math.floor(1000 + Math.random() * 9000)}</span>
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground">(This is a mockup. Real rewards coming soon!)</div>
               </div>
               <DialogFooter>

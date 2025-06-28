@@ -16,6 +16,7 @@ interface DataContextProps {
   deleteGoal: (goalId: string) => Promise<void>;
   editGoal: (goalId: string, updates: Partial<LibGoal>) => Promise<void>;
   awardPoints: (amount: number, reason: string) => Promise<void>;
+  redeemPoints: (cost: number) => Promise<boolean>;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -492,8 +493,31 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const redeemPoints = async (cost: number) => {
+    if (!user) return false;
+    if (points < cost) return false;
+    const newPoints = points - cost;
+    setPoints(newPoints);
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ points: newPoints })
+        .eq('id', user.id);
+      if (error) {
+        setPoints(points); // revert
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not redeem reward.' });
+        return false;
+      }
+      return true;
+    } catch (e) {
+      setPoints(points); // revert
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not redeem reward.' });
+      return false;
+    }
+  };
+
   return (
-    <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal, deleteGoal, editGoal, awardPoints }}>
+    <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal, deleteGoal, editGoal, awardPoints, redeemPoints }}>
       {children}
     </DataContext.Provider>
   );
