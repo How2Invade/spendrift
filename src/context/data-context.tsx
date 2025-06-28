@@ -13,9 +13,6 @@ interface DataContextProps {
   addTransaction: (transaction: Omit<LibTransaction, 'id' | 'emotionalState'>) => Promise<void>;
   addGoal: (goal: Omit<LibGoal, 'id' | 'progress' | 'isCompleted'>) => Promise<void>;
   completeGoal: (goalId: string) => Promise<void>;
-  deleteGoal: (goalId: string) => Promise<void>;
-  editGoal: (goalId: string, updates: Partial<LibGoal>) => Promise<void>;
-  awardPoints: (amount: number, reason: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -66,33 +63,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     return emojiMap[category.toLowerCase()] || '📦';
   };
 
-  // Initialize points for users who might not have them set
-  const initializePoints = async () => {
-    if (!user || !userProfile) return;
-    
-    // If points is not a number or is 0, initialize to 100
-    if (typeof userProfile.points !== 'number' || userProfile.points === 0) {
-      console.log('Initializing points for user:', user.id);
-      try {
-        const { error } = await supabase
-          .from('user_profiles')
-          .update({
-            points: 100
-          })
-          .eq('id', user.id);
-
-        if (error) {
-          console.error('Error initializing points:', error);
-        } else {
-          console.log('Points initialized to 100');
-          setPoints(100);
-        }
-      } catch (error) {
-        console.error('Error initializing points:', error);
-      }
-    }
-  };
-
   useEffect(() => {
     if (!user) {
       setTransactions([]);
@@ -101,21 +71,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Set points from user profile with better handling
-    if (userProfile) {
-      console.log('Setting points from user profile:', userProfile.points);
-      if (typeof userProfile.points === 'number') {
-        setPoints(userProfile.points);
-      } else {
-        // If points is not a number, initialize to 0
-        console.warn('User profile points is not a number:', userProfile.points);
-        setPoints(0);
-        // Initialize points for this user
-        initializePoints();
-      }
-    } else {
-      console.log('No user profile available, setting points to 0');
-      setPoints(0);
+    // Set points from user profile
+    if (userProfile && typeof userProfile.points === 'number') {
+      setPoints(userProfile.points);
     }
 
     // Load transactions
@@ -168,11 +126,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           filter: `id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('User profile updated:', payload);
           if (payload.new && typeof payload.new === 'object' && 'points' in payload.new) {
-            const newPoints = (payload.new as any).points;
-            console.log('Updating points to:', newPoints);
-            setPoints(newPoints);
+            setPoints((payload.new as any).points);
           }
         }
       )
@@ -331,13 +286,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     if (!goal || goal.isCompleted) return;
 
     try {
-      console.log('Completing goal:', goal.title, 'for', goal.points, 'points');
-      console.log('Current points:', points);
-      
-      // Optimistically update local state
-      const newPoints = points + goal.points;
-      setPoints(newPoints);
-      
       // Update goal
       const { error: goalError } = await supabase
         .from('goals')
@@ -347,13 +295,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         })
         .eq('id', goalId);
 
-      if (goalError) {
-        console.error('Error updating goal:', goalError);
-        setPoints(points); // Revert local state
-        throw goalError;
-      }
+      if (goalError) throw goalError;
 
       // Update user points
+      const newPoints = points + goal.points;
       const { error: userError } = await supabase
         .from('user_profiles')
         .update({
@@ -361,13 +306,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         })
         .eq('id', user.id);
 
-      if (userError) {
-        console.error('Error updating user points:', userError);
-        setPoints(points); // Revert local state
-        throw userError;
-      }
-      
-      console.log('Goal completed successfully. New points:', newPoints);
+      if (userError) throw userError;
       
       toast({
         title: 'Goal Completed! 🎉',
@@ -379,121 +318,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const deleteGoal = async (goalId: string) => {
-    if (!user) return;
-    
-    const goal = goals.find(g => g.id === goalId);
-    if (!goal) return;
-
-    try {
-      // Update goal
-      const { error: goalError } = await supabase
-        .from('goals')
-        .update({
-          is_completed: false,
-          progress: 0,
-        })
-        .eq('id', goalId);
-
-      if (goalError) throw goalError;
-
-      // Update user points
-      const newPoints = points - goal.points;
-      const { error: userError } = await supabase
-        .from('user_profiles')
-        .update({
-          points: newPoints
-        })
-        .eq('id', user.id);
-
-      if (userError) throw userError;
-      
-      toast({
-        title: 'Goal Deleted!',
-        description: `You've lost ${goal.points} Zen Points.`,
-      });
-    } catch (error) {
-      console.error("Error deleting goal: ", error);
-      toast({ variant: "destructive", title: "Error", description: "Could not delete goal." });
-    }
-  };
-
-  const editGoal = async (goalId: string, updates: Partial<LibGoal>) => {
-    if (!user) return;
-    
-    const goal = goals.find(g => g.id === goalId);
-    if (!goal) return;
-
-    try {
-      // Update goal
-      const { error: goalError } = await supabase
-        .from('goals')
-        .update(updates)
-        .eq('id', goalId);
-
-      if (goalError) throw goalError;
-
-      // Update user points
-      const newPoints = points + (updates.points || 0) - goal.points;
-      const { error: userError } = await supabase
-        .from('user_profiles')
-        .update({
-          points: newPoints
-        })
-        .eq('id', user.id);
-
-      if (userError) throw userError;
-      
-      toast({
-        title: 'Goal Updated!',
-        description: `You've earned ${updates.points || 0} Zen Points!`,
-      });
-    } catch (error) {
-      console.error("Error editing goal: ", error);
-      toast({ variant: "destructive", title: "Error", description: "Could not edit goal." });
-    }
-  };
-
-  const awardPoints = async (amount: number, reason: string) => {
-    if (!user) return;
-    
-    try {
-      console.log('Awarding points:', amount, 'for reason:', reason);
-      console.log('Current points:', points);
-      
-      // Optimistically update local state
-      const newPoints = points + amount;
-      setPoints(newPoints);
-      
-      // Update user points in database
-      const { error: userError } = await supabase
-        .from('user_profiles')
-        .update({
-          points: newPoints
-        })
-        .eq('id', user.id);
-
-      if (userError) {
-        console.error('Error updating points in database:', userError);
-        // Revert local state if database update failed
-        setPoints(points);
-        throw userError;
-      }
-      
-      console.log('Points updated successfully in database to:', newPoints);
-      
-      toast({
-        title: 'Points Awarded! 🎉',
-        description: `You've earned ${amount} Zen Points! Reason: ${reason}`,
-      });
-    } catch (error) {
-      console.error("Error awarding points: ", error);
-      toast({ variant: "destructive", title: "Error", description: "Could not award points." });
-    }
-  };
-
   return (
-    <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal, deleteGoal, editGoal, awardPoints }}>
+    <DataContext.Provider value={{ transactions, goals, points, addTransaction, addGoal, completeGoal }}>
       {children}
     </DataContext.Provider>
   );

@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useAuth } from '@/context/auth-context';
 import { 
   ArrowRight, 
   Sparkles, 
@@ -48,6 +49,7 @@ const Hero = () => {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const { user } = useAuth();
 
   // Floating elements data
   const floatingElements = [
@@ -465,7 +467,7 @@ const Hero = () => {
                 size="lg" 
                 className="font-retro text-lg px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground group relative overflow-hidden"
               >
-                <Link href="/auth">
+                <Link href={user ? "/dashboard" : "/auth"}>
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     initial={{ x: '-100%' }}
@@ -473,7 +475,7 @@ const Hero = () => {
                     transition={{ duration: 0.6 }}
                   />
                   <span className="relative z-10 flex items-center">
-                    Get Started
+                    {user ? "Go to Dashboard" : "Get Started"}
                     <motion.div
                       className="ml-2"
                       animate={{ x: [0, 5, 0] }}
@@ -499,36 +501,38 @@ const Hero = () => {
               />
             </motion.div>
             
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                asChild
-                variant="outline" 
-                size="lg" 
-                className="font-mono text-lg px-8 py-4 border-primary/30 hover:bg-primary/10 group relative overflow-hidden"
+            {!user && (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Link href="/auth">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5"
-                    initial={{ scale: 0 }}
-                    whileHover={{ scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <span className="relative z-10 flex items-center">
+                <Button 
+                  asChild
+                  variant="outline" 
+                  size="lg" 
+                  className="font-mono text-lg px-8 py-4 border-primary/30 hover:bg-primary/10 group relative overflow-hidden"
+                >
+                  <Link href="/auth">
                     <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="mr-2"
-                    >
-                      <Zap className="h-5 w-5" />
-                    </motion.div>
-                    Sign In
-                  </span>
-                </Link>
-              </Button>
-            </motion.div>
+                      className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5"
+                      initial={{ scale: 0 }}
+                      whileHover={{ scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <span className="relative z-10 flex items-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="mr-2"
+                      >
+                        <Zap className="h-5 w-5" />
+                      </motion.div>
+                      Sign In
+                    </span>
+                  </Link>
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Stats */}
@@ -781,6 +785,8 @@ const TechStackSection = () => {
 };
 
 const CTASection = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="relative z-10 py-32 px-4">
       <div className="max-w-4xl mx-auto text-center">
@@ -791,12 +797,14 @@ const CTASection = () => {
           viewport={{ once: true }}
         >
           <h2 className="text-4xl md:text-6xl font-bold font-retro text-foreground mb-6">
-            Ready to level up your
+            {user ? "Ready to continue your" : "Ready to level up your"}
             <span className="text-primary"> finance game</span>?
           </h2>
           <p className="text-xl text-muted-foreground font-mono mb-12 max-w-2xl mx-auto">
-            Join the financial revolution that actually speaks your language. 
-            No cap, this is the future of money management.
+            {user 
+              ? "Jump back into your financial journey and keep building your wealth empire."
+              : "Join the financial revolution that actually speaks your language. No cap, this is the future of money management."
+            }
           </p>
           
           <motion.div
@@ -811,8 +819,8 @@ const CTASection = () => {
               size="lg" 
               className="font-retro text-xl px-12 py-6 bg-primary hover:bg-primary/90 text-primary-foreground group"
             >
-              <Link href="/auth">
-                Start Your Journey
+              <Link href={user ? "/dashboard" : "/auth"}>
+                {user ? "Go to Dashboard" : "Start Your Journey"}
                 <Sparkles className="ml-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
               </Link>
             </Button>
