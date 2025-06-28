@@ -239,37 +239,6 @@ export default function GoalsPage() {
           </h1>
           <p className="text-muted-foreground font-mono">Track your progress and stay motivated to reach your financial objectives.</p>
           <div className="mt-2 text-sm text-primary font-semibold">"Every small step counts. Keep going!"</div>
-          
-          {/* Debug section - remove in production */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-              <h3 className="font-bold text-yellow-800 mb-2">Debug Info (Development Only)</h3>
-              <div className="text-sm text-yellow-700 space-y-1">
-                <div>Current Points: {points}</div>
-                <div>User Profile Points: {userProfile?.points || 'N/A'}</div>
-                <div>User ID: {user?.id || 'N/A'}</div>
-                <div>User Email: {user?.email || 'N/A'}</div>
-              </div>
-              <div className="mt-3 space-x-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => awardPoints(10, 'Debug Test')}
-                  className="text-xs"
-                >
-                  Test +10 Points
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => console.log('Current state:', { points, userProfile, user })}
-                  className="text-xs"
-                >
-                  Log State
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
         <div className="flex gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
